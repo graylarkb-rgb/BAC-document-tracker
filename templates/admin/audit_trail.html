@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Audit Trail</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 0;
+            font-size: 13px;
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            background-color: #1f2937;
+            color: #fff;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        header .back-btn {
+            color: white;
+            padding: 6px 12px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            background: #e5e7eb;
+            text-align: center;
+            padding: 15px;
+            font-size: 13px;
+        }
+
+        /* ===== AUDIT CONTENT ===== */
+        .audit-fixed {
+            padding: 20px 30px;
+            min-height: calc(100vh - 120px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .audit-search-wrapper {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin: 15px 0;
+        }
+
+        .audit-search-wrapper input,
+        .audit-search-wrapper button {
+            padding: 6px 10px;
+            font-size: 12px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .audit-search-wrapper button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .audit-search-wrapper .clear-btn {
+            background: #d9534f;
+        }
+
+        .audit-table-container {
+            flex: 1;
+            overflow-y: auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .audit-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .audit-table thead th {
+            background-color: #1f2937;
+            color: white;
+            text-transform: uppercase;
+            padding: 10px 12px;
+        }
+
+        .audit-table td {
+            padding: 10px 12px;
+            text-align: center;
+        }
+
+        .audit-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .audit-table tr:hover {
+            background-color: #eef3fb;
+        }
+
+        /* ===== PAGINATION ===== */
+        .pagination {
+            padding: 12px;
+            text-align: center;
+        }
+        .pagination button {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 5px;
+            background: #2563eb; 2563eb
+            color: white;
+            cursor: pointer;
+        }
+        .pagination button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* ===== BLUR ===== */
+        .blur-backdrop {
+            position: fixed;
+            inset: 0;
+            backdrop-filter: blur(6px);
+            background: rgba(255,255,255,0.15);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 998;
+        }
+
+        body.loading .blur-backdrop {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* ===== LOADER ===== */
+        .loader {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            background: rgba(255,255,255,0.6);
+            z-index: 999;
+        }
+
+        body.loading .loader {
+            display: flex;
+        }
+
+        .loader-text {
+            display: flex;
+            gap: 6px;
+            font-size: 36px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            color: #1f2937;
+        }
+
+        .loader-text span {
+            animation: jump 1.2s infinite ease-in-out;
+        }
+
+        .loader-text span:nth-child(1){animation-delay:0s}
+        .loader-text span:nth-child(2){animation-delay:.1s}
+        .loader-text span:nth-child(3){animation-delay:.2s}
+        .loader-text span:nth-child(4){animation-delay:.3s}
+        .loader-text span:nth-child(5){animation-delay:.4s}
+        .loader-text span:nth-child(6){animation-delay:.5s}
+
+        @keyframes jump {
+            0%,100%{transform:translateY(0)}
+            50%{transform:translateY(-15px)}
+        }
+
+        .loader-subtext {
+            margin-top: 12px;
+            font-size: 14px;
+            color: #374151;
+        }
+
+ /* ===== PAGINATION ===== */
+.pagination {
+    padding: 12px;
+    text-align: center;
+}
+.pagination button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 5px;
+    background: #2563eb;
+    color: white;
+    cursor: pointer;
+}
+    </style>
+</head>
+<body>
+
+<!-- ===== BLUR ===== -->
+<div class="blur-backdrop"></div>
+
+<!-- ===== LOADER ===== -->
+<div class="loader">
+    <div class="loader-text">
+        <span>A</span><span>L</span><span>A</span><span>B</span><span>A</span><span>T</span>
+    </div>
+    <div class="loader-subtext" id="loaderMessage">Loading...</div>
+</div>
+
+<header>
+    <h1>📋 Audit Trail</h1>
+    <a href="#" class="back-btn" onclick="goBackToDashboard(event)">← Back</a>
+</header>
+
+<div class="audit-fixed">
+
+    <div class="audit-search-wrapper">
+        <input type="text" id="auditSearchInput" placeholder="Search Office...">
+        <input type="date" id="auditDateInput">
+        <button onclick="searchAudit()">Search</button>
+        <button onclick="clearAuditSearch()" class="clear-btn">Clear</button>
+    </div>
+
+    <div class="audit-table-container">
+        <table class="audit-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Action</th>
+                    <th>Date/Time</th>
+                    <th>Username</th>
+                    <th>Office</th>
+                </tr>
+            </thead>
+            <tbody id="auditTrailBody">
+                <tr>
+                    <td colspan="5" style="text-align:center; padding:20px;">
+                        Loading logs...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination">
+        <button onclick="changePage(currentPage-1)" id="prevBtn">Prev</button>
+        <span id="pageInfo"></span>
+        <button onclick="changePage(currentPage+1)" id="nextBtn">Next</button>
+    </div>
+
+</div>
+
+<footer>
+    © 2026 Document Tracking System | Admin Panel
+</footer>
+
+<script>
+function goBackToDashboard(event){
+    event.preventDefault();
+    document.body.classList.add('loading');
+    document.getElementById('loaderMessage').textContent = 'Returning to Dashboard...';
+    setTimeout(() => {
+        window.location.href = "{{ url_for('dashboard') }}";
+    }, 1000);
+}
+
+// ===== Audit Trail Pagination =====
+let auditData = [];
+let currentPage = 1;
+const rowsPerPage = 14;
+
+function loadAuditTrail() {
+    const tbody = document.getElementById("auditTrailBody");
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px;">Loading logs...</td></tr>`;
+
+    fetch("{{ url_for('audit_trail_data') }}")
+        .then(res => res.json())
+        .then(data => {
+            auditData = data;
+            renderPage(1);
+        })
+        .catch(err => {
+            console.error(err);
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:red;">Error loading logs</td></tr>`;
+        });
+}
+
+function renderPage(page) {
+    const tbody = document.getElementById("auditTrailBody");
+    const pageInfo = document.getElementById("pageInfo");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+
+    const totalPages = Math.ceil(auditData.length / rowsPerPage);
+    currentPage = Math.max(1, Math.min(page, totalPages));
+
+    tbody.innerHTML = "";
+
+    const start = (currentPage - 1) * rowsPerPage;
+    const end = currentPage * rowsPerPage;
+    const pageRows = auditData.slice(start, end);
+
+    if(pageRows.length === 0){
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px;">No logs found</td></tr>`;
+    } else {
+        pageRows.forEach(row => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${row.id}</td>
+                <td>${row.action}</td>
+                <td>${row.date_time}</td>
+                <td>${row.username}</td>
+                <td>${row.office}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    pageInfo.textContent = `Page ${currentPage} of ${totalPages || 1}`;
+
+    prevBtn.disabled = currentPage === 1;
+    nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+}
+
+function changePage(p){
+    renderPage(p);
+}
+
+function searchAudit(){
+    const query = document.getElementById("auditSearchInput").value.toLowerCase();
+    const date = document.getElementById("auditDateInput").value;
+
+    const filtered = auditData.filter(r => {
+        const matchQuery = r.username.toLowerCase().includes(query) || r.office.toLowerCase().includes(query);
+        const matchDate = !date || r.date_time.startsWith(date);
+        return matchQuery && matchDate;
+    });
+
+    auditData = filtered;
+    renderPage(1);
+}
+
+function clearAuditSearch(){
+    document.getElementById("auditSearchInput").value = "";
+    document.getElementById("auditDateInput").value = "";
+    loadAuditTrail();
+}
+
+window.addEventListener("DOMContentLoaded", loadAuditTrail);
+</script>
+
+</body>
+</html>

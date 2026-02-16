@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Add Document | OME Dashboard</title>
+
+  <style>
+    /* ===== GLOBAL ===== */
+    body{
+      margin:0;
+      font-family:Arial, sans-serif;
+      background:#f4f6f8;
+      font-size:14px;
+      display:flex;
+      flex-direction:column;
+      min-height:100vh;
+    }
+    html, body{ height:100%; }
+
+    /* ===== HEADER ===== */
+    header{
+      background:#1f2937;
+      color:#fff;
+      padding:15px 30px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    header h1{ margin:0; font-size:20px; }
+
+    .nav{
+      display:flex;
+      align-items:center;
+      gap:20px;
+    }
+
+    /* BACK BUTTON */
+    .back-btn{
+      color:#fff;
+      text-decoration:none;
+      font-size:14px;
+      cursor:pointer;
+    }
+    .back-btn:hover{ opacity:.85; }
+
+    /* ===== MAIN ===== */
+    main{
+      flex:1;
+      padding:20px 30px;
+    }
+
+    /* ===== CONTENT TOOLBAR (LIKE SCREENSHOT) ===== */
+    .toolbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:16px;
+      margin-bottom:14px;
+    }
+
+    .left-actions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+
+    .icon-btn{
+      width:44px;
+      height:36px;
+      border:none;
+      border-radius:6px;
+      background:#1d4ed8;
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      box-shadow:0 2px 6px rgba(0,0,0,.08);
+    }
+    .icon-btn:hover{ background:#1e40af; }
+    .icon-btn:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+    .icon-btn svg{ width:18px; height:18px; fill:#fff; }
+
+    .right-actions{
+      display:flex;
+      justify-content:flex-end;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .search-input{
+      width:340px;
+      max-width:56vw;
+      height:36px;
+      border:1px solid #d1d5db;
+      border-radius:6px;
+      padding:0 12px;
+      font-size:14px;
+      background:#fff;
+    }
+    .search-input:focus{
+      outline:none;
+      border-color:#2563eb;
+    }
+
+    .btn{
+      height:36px;
+      padding:0 14px;
+      border:none;
+      border-radius:6px;
+      font-size:14px;
+      cursor:pointer;
+    }
+
+    .btn-primary{
+      background:#2563eb;
+      color:#fff;
+    }
+    .btn-primary:hover{ background:#1d4ed8; }
+
+    .btn-secondary{
+      background:#1d4ed8;
+      color:#fff;
+    }
+    .btn-secondary:hover{ background:#1e40af; }
+
+    /* ===== TABLE WRAPPER ===== */
+    .table-card{
+      background:#fff;
+      border-radius:10px;
+      box-shadow:0 4px 10px rgba(0,0,0,.08);
+      overflow:hidden;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      table-layout:fixed;
+    }
+
+    thead th{
+      background:#1f2937;
+      color:#fff;
+      text-align:left;
+      padding:12px 14px;
+      font-weight:700;
+      font-size:16px;
+    }
+
+    tbody td{
+      padding:14px;
+      border-top:1px solid #e5e7eb;
+      font-size:16px;
+    }
+
+    tbody tr{
+      background:#fff;
+      cursor:pointer;
+    }
+
+    tbody tr:hover{
+      background:#f9fafb;
+    }
+
+    tbody tr.selected{
+      background:#eef2ff;
+      outline:2px solid rgba(37,99,235,.25);
+      outline-offset:-2px;
+    }
+
+    /* ===== PAGINATION ===== */
+    .pagination{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:10px;
+      padding:14px;
+      border-top:1px solid #e5e7eb;
+      background:#fff;
+    }
+
+    .pager-btn{
+      height:34px;
+      padding:0 14px;
+      border:none;
+      border-radius:6px;
+      cursor:pointer;
+      background:#2563eb;
+      color:#fff;
+      font-size:14px;
+    }
+    .pager-btn:hover{ background:#1d4ed8; }
+    .pager-btn:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+
+    .page-label{
+      font-size:16px;
+      color:#111827;
+    }
+
+    /* ===== FOOTER ===== */
+    footer{
+      background:#e5e7eb;
+      text-align:center;
+      padding:15px;
+      font-size:13px;
+    }
+
+    /* ===== BLUR ===== */
+    .blur-backdrop {
+      position: fixed;
+      inset: 0;
+      backdrop-filter: blur(6px);
+      background: rgba(255,255,255,0.15);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.28s ease;
+      z-index: 998;
+    }
+
+    body.loading .blur-backdrop {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    /* ===== LOADER ===== */
+    .loader {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      background: rgba(255,255,255,0.6);
+      z-index: 999;
+      opacity: 0;
+      transition: opacity 0.28s ease;
+    }
+
+    body.loading .loader {
+      display: flex;
+      opacity: 1;
+    }
+
+    .loader-text {
+      display: flex;
+      gap: 6px;
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      color: #1f2937;
+    }
+
+    .loader-text span {
+      animation: jump 1.2s infinite ease-in-out;
+    }
+
+    .loader-text span:nth-child(1){animation-delay:0s}
+    .loader-text span:nth-child(2){animation-delay:.1s}
+    .loader-text span:nth-child(3){animation-delay:.2s}
+    .loader-text span:nth-child(4){animation-delay:.3s}
+    .loader-text span:nth-child(5){animation-delay:.4s}
+    .loader-text span:nth-child(6){animation-delay:.5s}
+
+    @keyframes jump {
+      0%,100%{transform:translateY(0)}
+      50%{transform:translateY(-15px)}
+    }
+
+    .loader-subtext {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #374151;
+    }
+
+    /* ===== ADD MODAL OVERLAY + BLUR + FADE ===== */
+    .modal-overlay{
+      position:fixed;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+      background: rgba(17,24,39,0.25);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 2000;
+
+      opacity:0;
+      visibility:hidden;
+      pointer-events:none;
+      transition: opacity 220ms ease, visibility 220ms ease;
+    }
+    .modal-overlay.active{
+      opacity:1;
+      visibility:visible;
+      pointer-events:auto;
+    }
+
+    /* ===== MODAL CARD (MATCH PHOTO) + FADE/SLIDE ===== */
+    .modal{
+      width:min(960px, 100%);
+      background:#fff;
+      border-radius:12px;
+      box-shadow:0 18px 40px rgba(0,0,0,.22);
+      overflow:hidden;
+
+      opacity:0;
+      transform: translateY(8px) scale(0.99);
+      transition: opacity 240ms ease, transform 240ms ease;
+    }
+    .modal-overlay.active .modal{
+      opacity:1;
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-inner{
+      padding:26px 34px 22px;
+    }
+
+    .modal-title{
+      text-align:center;
+      font-size:32px;
+      font-weight:700;
+      color:#0b2a50;
+      margin: 6px 0 14px;
+    }
+
+    .modal-divider{
+      height:1px;
+      background:#d1d5db;
+      margin: 0 0 18px;
+    }
+
+    .modal-form{
+      width:100%;
+      max-width:780px;
+      margin:0 auto;
+    }
+
+    /* TWO-COLUMN ROW FOR SIGNATORIES + STATUS */
+    .row-2col{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:16px;
+    }
+    @media (max-width: 720px){
+      .row-2col{ grid-template-columns: 1fr; }
+    }
+
+    .field{
+      margin: 0 0 16px;
+    }
+
+    .field label{
+      display:block;
+      font-weight:700;
+      color:#0b2a50;
+      font-size:18px;
+      margin: 0 0 8px;
+    }
+
+    .field select,
+    .field input[type="file"]{
+      width:100%;
+      height:52px;
+      border:1px solid #cbd5e1;
+      border-radius:8px;
+      padding: 0 14px;
+      font-size:18px;
+      background:#fff;
+      box-sizing:border-box;
+    }
+
+    .field select:focus,
+    .field input[type="file"]:focus{
+      outline:none;
+      border-color:#2563eb;
+    }
+
+    /* keep file input layout clean */
+    .field input[type="file"]{
+      padding: 10px 12px;
+      height:auto;
+      min-height:52px;
+    }
+
+    .send-btn{
+      width:100%;
+      height:60px;
+      margin-top: 10px;
+      border:none;
+      border-radius:10px;
+      background:#073763;
+      color:#fff;
+      font-size:18px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .send-btn:hover{ background:#052c4d; }
+
+    .modal-cancel{
+      display:block;
+      text-align:center;
+      margin-top: 14px;
+      color:#0b2a50;
+      text-decoration:none;
+      font-size:16px;
+    }
+    .modal-cancel:hover{ text-decoration:underline; }
+
+    body.modal-open{ overflow:hidden; }
+
+    /* ===== PAGE FADE IN ===== */
+    .page-fade{
+      opacity:0;
+      transform: translateY(4px);
+      transition: opacity 260ms ease, transform 260ms ease;
+    }
+    .page-fade.loaded{
+      opacity:1;
+      transform: translateY(0);
+    }
+
+    /* respect reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      .modal-overlay, .modal, .page-fade, .loader, .blur-backdrop{
+        transition:none !important;
+      }
+      .loader-text span{ animation:none !important; }
+    }
+
+    /* ==========================================================
+       ✅ ADD DOCUMENT MODAL — COMPACT TYPOGRAPHY OVERRIDES
+       ========================================================== */
+
+    #addModalOverlay .modal{
+      width: min(720px, 100%);
+    }
+
+    #addModalOverlay .modal-inner{
+      padding: 20px 26px 18px;
+    }
+
+    #addModalOverlay .modal-title{
+      font-size: 22px;
+      margin: 4px 0 10px;
+    }
+
+    #addModalOverlay .modal-divider{
+      margin: 0 0 14px;
+    }
+
+    #addModalOverlay .modal-form{
+      max-width: 620px;
+    }
+
+    #addModalOverlay .field{
+      margin: 0 0 12px;
+    }
+
+    #addModalOverlay .field label{
+      font-size: 13px;
+      margin: 0 0 4px;
+      font-weight: 700;
+    }
+
+    #addModalOverlay .field select,
+    #addModalOverlay .field input[type="file"]{
+      height: 40px;
+      font-size: 13px;
+      border-radius: 7px;
+      padding: 0 12px;
+    }
+
+    #addModalOverlay .field input[type="file"]{
+      height: auto;
+      min-height: 40px;
+      padding: 8px 10px;
+    }
+
+    #addModalOverlay .row-2col{
+      gap: 12px;
+    }
+
+    #addModalOverlay .send-btn{
+      height: 46px;
+      font-size: 14px;
+      border-radius: 9px;
+      margin-top: 8px;
+    }
+
+    #addModalOverlay .modal-cancel{
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+      /* ===== TABLE TUNING: smaller font + wider title column ===== */
+  .data-table{
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* ✅ makes width rules reliable */
+  }
+
+  /* smaller overall text */
+  .data-table th,
+  .data-table td{
+    font-size: 12px;          /* ✅ smaller font */
+    padding: 10px 12px;       /* ✅ tighter spacing */
+    vertical-align: middle;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  .data-table th{
+    font-size: 12.5px;
+    font-weight: 700;
+  }
+
+  /* ✅ column widths: Program/Project Title is wider */
+  .data-table th.col-control,
+  .data-table td.col-control{ width: 6%; }
+
+  .data-table th.col-title,
+  .data-table td.col-title{ width: 48%; }   /* ✅ WIDER */
+
+  .data-table th.col-doc,
+  .data-table td.col-doc{ width: 8%; }
+
+  .data-table th.col-sendto,
+  .data-table td.col-sendto{ width: 4%; }   /* ✅ smaller */
+
+  .data-table th.col-sign,
+  .data-table td.col-sign{ width: 18%; }
+
+  .data-table th.col-date,
+  .data-table td.col-date{ width: 9%; }     /* ✅ smaller */
+
+  /* Optional: reduce tall rows caused by long text */
+  .data-table td.col-title{
+    line-height: 1.25;
+  }
+
+  input[readonly]{
+  background:#f9fafb;
+  color:#374151;
+  cursor:not-allowed;
+}
+
+  </style>
+</head>
+
+<body>
+
+  <!-- BLUR -->
+  <div class="blur-backdrop"></div>
+
+  <!-- LOADER -->
+  <div class="loader">
+    <div class="loader-text">
+      <span>A</span><span>L</span><span>A</span><span>B</span><span>A</span><span>T</span>
+    </div>
+    <div class="loader-subtext" id="loaderMessage">Loading...</div>
+  </div>
+
+  <!-- ===== HEADER ===== -->
+  <header>
+    <h1>🏗️ OME Dashboard</h1>
+    <div class="nav">
+     <a href="/ome/dashboard" class="back-btn" id="backBtn" onclick="goBackToDashboard(event)">← Back</a>
+
+    </div>
+  </header>
+
+  <!-- ===== MAIN ===== -->
+  <main class="page-fade" id="pageFade">
+
+    <!-- TOP TOOLBAR (ADD/EDIT + SEARCH) -->
+    <div class="toolbar">
+      <div class="left-actions">
+        <!-- ADD -->
+        <button class="icon-btn" type="button" title="Add" onclick="onAdd()">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M11 5a1 1 0 0 1 2 0v6h6a1 1 0 1 1 0 2h-6v6a1 1 0 1 1-2 0v-6H5a1 1 0 1 1 0-2h6V5z"/>
+          </svg>
+        </button>
+
+        <!-- EDIT -->
+        <button class="icon-btn" id="editBtn" type="button" title="Edit" onclick="onEdit()" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm2.92 2.83H5v-.92l9.06-9.06.92.92L5.92 20.08zM20.71 7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="right-actions">
+        <input
+          id="searchInput"
+          class="search-input"
+          type="text"
+          placeholder="Search by Name or Office"
+          onkeydown="if(event.key==='Enter'){ event.preventDefault(); applySearch(); }"
+        />
+        <button class="btn btn-primary" type="button" onclick="applySearch()">Search</button>
+        <button class="btn btn-secondary" type="button" onclick="clearSearch()">Clear</button>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-card">
+     <!-- ✅ UPDATE YOUR TABLE MARKUP (add the classes to TH + TD) -->
+<table class="data-table">
+  <thead>
+    <tr>
+      <th class="col-control">Control No.</th>
+      <th class="col-title">Program/Project Title</th>
+      <th class="col-doc">Document Type</th>
+      <th class="col-sendto">Sent to</th>
+      <th class="col-sign">Signatories</th>
+      <th class="col-date">Date Sent</th>
+    </tr>
+  </thead>
+
+  <tbody id="tableBody">
+    <!-- rows injected by JS -->
+  </tbody>
+</table>
+
+      <!-- PAGINATION -->
+      <div class="pagination">
+        <button class="pager-btn" id="prevBtn" type="button" onclick="prevPage()">Prev</button>
+        <div class="page-label" id="pageLabel">Page 1 of 1</div>
+        <button class="pager-btn" id="nextBtn" type="button" onclick="nextPage()">Next</button>
+      </div>
+    </div>
+
+  </main>
+<!-- ===== ADD MODAL OVERLAY (CENTER) ===== -->
+<div class="modal-overlay" id="addModalOverlay" onclick="overlayClick(event)">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="addModalTitle" onclick="event.stopPropagation()">
+
+    <div class="modal-inner">
+      <div class="modal-title" id="addModalTitle">Add Document</div>
+      <div class="modal-divider"></div>
+
+      <!-- FORM -->
+      <form class="modal-form" id="addDocForm" onsubmit="submitAddModal(event)">
+
+        <!-- ✅ Select Here -->
+        <div class="field">
+          <label for="selectHere">Select here</label>
+
+          <select id="selectHere" name="issued_control_id" required>
+            <option value="">--Select Here--</option>
+          </select>
+
+          <small id="selectHereHint"
+                 style="color:#6b7280; display:block; margin-top:6px;"></small>
+        </div>
+
+        <!-- ✅ Amount (READ ONLY) -->
+        <div class="field">
+          <label for="amountField">Amount</label>
+          <input
+            id="amountField"
+            name="amount"
+            type="text"
+            readonly
+            placeholder="Auto-filled"
+            style="
+              width: 100%;
+              height: 44px;
+              padding: 0 14px;
+              border: 1px solid #cbd5e1;
+              border-radius: 10px;
+              outline: none;
+              font-size: 14px;
+              background: #ffffff;
+              box-sizing: border-box;
+            "
+          />
+        </div>
+
+        <!-- ✅ Source of Fund -->
+        <div class="field">
+          <label for="sourceOfFund">Source of Fund</label>
+          <input
+            id="sourceOfFund"
+            name="source_of_fund"
+            type="text"
+            readonly
+            placeholder="Auto-filled"
+            style="
+              width: 100%;
+              height: 44px;
+              padding: 0 14px;
+              border: 1px solid #cbd5e1;
+              border-radius: 10px;
+              outline: none;
+              font-size: 14px;
+              background: #ffffff;
+              box-sizing: border-box;
+            "
+          />
+        </div>
+
+        <!-- Document Type -->
+        <div class="field">
+          <label for="documentType">Document Type:</label>
+          <select id="documentType" name="document_type" required>
+            <option value="">--Select Here--</option>
+          </select>
+        </div>
+
+        <!-- Send To -->
+        <div class="field">
+          <label for="sendTo">Send to:</label>
+          <select id="sendTo" name="send_to" required>
+            <option value="">--Select Here--</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="uploadFile">Upload File:</label>
+          <input id="uploadFile" type="file" name="file" />
+        </div>
+
+        <div class="row-2col">
+          <div class="field">
+            <label for="signatories">Signatories:</label>
+            <select id="signatories" name="signatory_id" required>
+              <option value="">--Select Here--</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="statusField">Status:</label>
+            <select id="statusField" name="status" required>
+              <option value="">--Select Here--</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="send-btn" type="submit">Send</button>
+        <a href="#" class="modal-cancel"
+           onclick="closeAddModal(); return false;">← Cancel</a>
+
+      </form>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  © 2026 Document Tracking System | User Panel
+</footer>
+
+<script>
+  /* ===== PAGE FADE IN INIT ===== */
+  window.addEventListener("DOMContentLoaded", () => {
+    const wrap = document.getElementById("pageFade");
+    if (wrap) requestAnimationFrame(() => wrap.classList.add("loaded"));
+
+    bindSelectHereToDocumentTypes();
+    bindDocumentTypeToSendTo();
+    bindSendToToSignatories();
+    bindDocumentTypeToStatus();
+
+    setDocumentTypeOptionsByCode("DEFAULT");
+
+    updateSendToOptionsByDocType("");
+    resetSignatories("--Select Here--");
+    updateStatusOptionsByDocType("");
+
+    // ✅ NEW: load transmitting documents table on page load
+    loadTransmittingDocuments();
+
+    // ✅ NEW: bind rows-per-page if present
+    const rpp = document.getElementById("rowsPerPage");
+    if (rpp) {
+      const v = parseInt(rpp.value, 10);
+      if (!Number.isNaN(v) && v > 0) tablePageSize = v;
+    }
+  });
+
+  console.log("✅ add_document_ome modal script loaded");
+
+  // ==========================================================
+  // ✅ Document Types per CODE (from Select here)
+  // ==========================================================
+  const DOC_TYPE_MAP = {
+    PRN: [
+      { value: "activity_design", label: "Activity Design" },
+      { value: "purchase_request", label: "Purchase Request" },
+      { value: "rfq", label: "Request for Quotation/Canvass Form" },
+      { value: "abstract_quotation", label: "Abstract of Quotation" },
+      { value: "purchase_order", label: "Purchase Order" },
+      { value: "inspection_acceptance", label: "Inspection and Acceptance" },
+      { value: "obligation_request", label: "Obligation Request" },
+      { value: "disbursement_voucher", label: "Disbursement Voucher" },
+      { value: "check_preparation", label: "Check Preparation" }
+    ],
+    DEFAULT: [
+      { value: "pr", label: "Purchase Request" },
+      { value: "po", label: "Purchase Order" },
+      { value: "noa", label: "Notice of Award" }
+    ]
+  };
+
+  // ==========================================================
+  // ✅ SendTo options per Document Type
+  // ==========================================================
+  const SEND_TO_BY_DOC_TYPE = {
+    activity_design: [
+      { value: "MBO", label: "MBO" },
+      { value: "MTO", label: "MTO" },
+      { value: "MMO", label: "MMO" }
+    ],
+    purchase_request: [
+      { value: "BAC", label: "BAC" },
+      { value: "MBO", label: "MBO" },
+      { value: "MMO", label: "MMO" }
+    ],
+    rfq: [{ value: "MMO", label: "MMO" }],
+    abstract_quotation: [
+      { value: "BAC", label: "BAC" },
+      { value: "MMO", label: "MMO" }
+    ],
+    purchase_order: [{ value: "MMO", label: "MMO" }],
+    inspection_acceptance: [
+      { value: "INSPECTOR", label: "INSPECTOR" },
+      { value: "GSO", label: "GSO" }
+    ],
+    obligation_request: [{ value: "MBO", label: "MBO" }],
+    disbursement_voucher: [
+      { value: "MTO", label: "MTO" },
+      { value: "OMACC", label: "OMAcc" },
+      { value: "MMO", label: "MMO" }
+    ],
+    check_preparation: [
+      { value: "MTO", label: "MTO" },
+      { value: "MMO", label: "MMO" }
+    ]
+  };
+
+  // ==========================================================
+  // ✅ Signatories matching rules per SendTo office code
+  // ==========================================================
+  const SIGNATORY_KEYWORDS_BY_SEND_TO = {
+    MBO: ["MBO", "Municipal Budget Officer"],
+    MMO: ["MMO", "Municipal Mayor"],
+    MTO: ["MTO", "Municipal Treasurer"],
+    OMACC: ["OMAcc", "OMACC", "Municipal Accountant"],
+    BAC: ["BAC", "BAC Secretariat", "BAC Member"],
+    INSPECTOR: ["INSPECTOR", "Inspector"],
+    GSO: ["GSO", "General Services Officer"]
+  };
+
+  // ==========================================================
+  // ✅ Status options per Document Type
+  // ==========================================================
+  const STATUS_BY_DOC_TYPE = {
+    obligation_request: [
+      { value: "for_signature", label: "For Signature" },
+      { value: "for_obligation", label: "For Obligation" }
+    ],
+    DEFAULT: [{ value: "for_signature", label: "For Signature" }]
+  };
+
+  function extractCodeFromLabel(labelText){
+    if (!labelText) return "";
+    const mParen = labelText.match(/^\(([^)]+)\)/);
+    if (mParen) return (mParen[1] || "").trim().toUpperCase();
+    const mPrefix = labelText.match(/^([A-Za-z]+)\s*\d/);
+    if (mPrefix) return (mPrefix[1] || "").trim().toUpperCase();
+    const mLetters = labelText.match(/^([A-Za-z]+)/);
+    if (mLetters) return (mLetters[1] || "").trim().toUpperCase();
+    return "";
+  }
+
+  function setDocumentTypeOptionsByCode(code){
+    const docTypeSelect = document.getElementById("documentType");
+    if (!docTypeSelect) return;
+
+    const list = DOC_TYPE_MAP[code] || DOC_TYPE_MAP.DEFAULT;
+
+    docTypeSelect.innerHTML = `<option value="">--Select Here--</option>`;
+    for (const item of list){
+      const opt = document.createElement("option");
+      opt.value = item.value;
+      opt.textContent = item.label;
+      docTypeSelect.appendChild(opt);
+    }
+
+    docTypeSelect.dispatchEvent(new Event("change"));
+  }
+
+  function bindSelectHereToDocumentTypes(){
+    const selectHere = document.getElementById("selectHere");
+    if (!selectHere) return;
+    if (selectHere.dataset.boundDocTypes === "1") return;
+    selectHere.dataset.boundDocTypes = "1";
+
+    selectHere.addEventListener("change", () => {
+      const selectedOption = selectHere.options[selectHere.selectedIndex];
+      const labelText = selectedOption ? selectedOption.textContent : "";
+      const code = extractCodeFromLabel(labelText);
+      setDocumentTypeOptionsByCode(code || "DEFAULT");
+    });
+  }
+
+  // ==========================================================
+  // ✅ DocumentType -> SendTo
+  // ==========================================================
+  function bindDocumentTypeToSendTo() {
+    const docType = document.getElementById("documentType");
+    if (!docType) return;
+    if (docType.dataset.boundSendTo === "1") return;
+    docType.dataset.boundSendTo = "1";
+
+    docType.addEventListener("change", () => {
+      updateSendToOptionsByDocType(docType.value);
+    });
+  }
+
+  function updateSendToOptionsByDocType(docTypeValue) {
+    const sendTo = document.getElementById("sendTo");
+    if (!sendTo) return;
+
+    sendTo.innerHTML = `<option value="">--Select Here--</option>`;
+    const list = SEND_TO_BY_DOC_TYPE[docTypeValue] || [];
+
+    if (!list.length) {
+      resetSignatories("--Select Here--");
+      return;
+    }
+
+    for (const item of list) {
+      const opt = document.createElement("option");
+      opt.value = item.value;
+      opt.textContent = item.label;
+      sendTo.appendChild(opt);
+    }
+
+    resetSignatories("--Select Here--");
+  }
+
+  // ==========================================================
+  // ✅ DocumentType -> Status
+  // ==========================================================
+  function bindDocumentTypeToStatus(){
+    const docType = document.getElementById("documentType");
+    if (!docType) return;
+    if (docType.dataset.boundStatus === "1") return;
+    docType.dataset.boundStatus = "1";
+
+    docType.addEventListener("change", () => {
+      updateStatusOptionsByDocType(docType.value);
+    });
+  }
+
+  function updateStatusOptionsByDocType(docTypeValue){
+    const status = document.getElementById("statusField");
+    if (!status) return;
+
+    const list = STATUS_BY_DOC_TYPE[docTypeValue] || STATUS_BY_DOC_TYPE.DEFAULT;
+
+    status.innerHTML = `<option value="">--Select Here--</option>`;
+    for (const item of list){
+      const opt = document.createElement("option");
+      opt.value = item.value;
+      opt.textContent = item.label;
+      status.appendChild(opt);
+    }
+
+    if ([...status.options].some(o => o.value === "for_signature")) {
+      status.value = "for_signature";
+    }
+  }
+
+  // ==========================================================
+  // ✅ SendTo -> Signatories
+  // ==========================================================
+  function bindSendToToSignatories() {
+    const sendTo = document.getElementById("sendTo");
+    if (!sendTo) return;
+    if (sendTo.dataset.boundSignatories === "1") return;
+    sendTo.dataset.boundSignatories = "1";
+
+    sendTo.addEventListener("change", () => {
+      const office = (sendTo.value || "").trim().toUpperCase();
+      const keywords = SIGNATORY_KEYWORDS_BY_SEND_TO[office] || [office];
+      loadSignatoriesForOffice(office, keywords);
+    });
+  }
+
+  function resetSignatories(firstLabel = "--Select Here--") {
+    const sig = document.getElementById("signatories");
+    if (!sig) return;
+    sig.innerHTML = `<option value="">${firstLabel}</option>`;
+  }
+
+  async function loadSignatoriesForOffice(officeCode, keywords = []) {
+    const sig = document.getElementById("signatories");
+    if (!sig) return;
+
+    if (!officeCode) {
+      resetSignatories("--Select Here--");
+      return;
+    }
+
+    sig.innerHTML = `<option value="">Loading...</option>`;
+    const kw = Array.isArray(keywords) && keywords.length ? keywords.join("|") : officeCode;
+
+    try {
+      const url = `/api/signatories?office=${encodeURIComponent(officeCode)}&keywords=${encodeURIComponent(kw)}`;
+      const res = await fetch(url, { method: "GET", headers: { "X-Requested-With": "XMLHttpRequest" } });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || !data.success) {
+        sig.innerHTML = `<option value="">No signatories found</option>`;
+        return;
+      }
+
+      const options = Array.isArray(data.options) ? data.options : [];
+      sig.innerHTML = `<option value="">--Select Here--</option>`;
+
+      for (const s of options) {
+        const opt = document.createElement("option");
+        opt.value = String(s.id);
+        opt.textContent = s.label;
+        sig.appendChild(opt);
+      }
+
+      if (options.length === 0) {
+        sig.innerHTML = `<option value="">No signatories found</option>`;
+      }
+    } catch (err) {
+      console.error(err);
+      sig.innerHTML = `<option value="">Network error</option>`;
+    }
+  }
+
+  /* ==========================================================
+     ✅ Load RECEIVED control numbers (NOW WITH AMOUNT + FUND)
+     ========================================================== */
+  async function loadReceivedControlNos(){
+    const select = document.getElementById("selectHere");
+    const hint = document.getElementById("selectHereHint");
+    const fundInput = document.getElementById("sourceOfFund"); // ✅ fund field
+    const amtInput  = document.getElementById("amountField");  // ✅ NEW amount field (add this ID in HTML)
+    if (!select) return;
+
+    // ✅ helper: money formatting (handles commas / null / empty)
+    function formatMoney(raw){
+      if (raw === null || raw === undefined) return "0.00";
+
+      const s = String(raw).trim();
+      if (!s) return "0.00";
+
+      const cleaned = s.replace(/,/g, "");
+      const num = parseFloat(cleaned);
+
+      if (Number.isNaN(num)) return "0.00";
+
+      return num.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    select.innerHTML = `<option value="">--Select Here--</option>`;
+    if (hint) hint.textContent = "Loading received control numbers...";
+    if (fundInput) fundInput.value = "";
+    if (amtInput) amtInput.value = ""; // ✅ clear amount while loading
+
+    try{
+      const res = await fetch("/ome/api/received-control-nos", {
+        method: "GET",
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || !data.success){
+        if (hint) hint.textContent = data.message || "Failed to load control numbers.";
+        return;
+      }
+
+      if (!Array.isArray(data.options) || data.options.length === 0){
+        if (hint) hint.textContent = "No received control numbers found for your office.";
+        return;
+      }
+
+      for (const opt of data.options){
+        const optionEl = document.createElement("option");
+        optionEl.value = String(opt.id);
+
+        const code = (opt.code || "").trim();
+        const controlNo = (opt.control_no || "").trim();
+        const program = (opt.program || "").trim();
+        const amountFormatted = formatMoney(opt.amount);
+        const fund = (opt.source_of_fund || "").trim();
+
+        // ✅ store values in dataset for auto-fill
+        optionEl.dataset.sourceFund = fund;
+        optionEl.dataset.amountRaw = (opt.amount ?? "");          // raw
+        optionEl.dataset.amountFmt = amountFormatted;             // formatted
+
+        optionEl.textContent =
+          `${code}${controlNo}-${program}, ${amountFormatted}${fund ? " - " + fund : ""}`;
+
+        select.appendChild(optionEl);
+      }
+
+      if (hint) hint.textContent = `${data.options.length} received control number(s) available.`;
+
+      // ✅ bind change ONCE: auto-fill Amount + Fund
+      if (select.dataset.boundFundAmt !== "1") {
+        select.dataset.boundFundAmt = "1";
+        select.addEventListener("change", () => {
+          const selected = select.options[select.selectedIndex];
+
+          if (fundInput) fundInput.value = selected?.dataset?.sourceFund || "";
+          if (amtInput)  amtInput.value  = selected?.dataset?.amountFmt || "";
+        });
+      }
+
+      // ✅ auto-fill immediately if first real option is selected later by code
+      // (keeps fields correct if your UI sets value programmatically)
+      if (fundInput || amtInput){
+        const selected = select.options[select.selectedIndex];
+        if (selected) {
+          if (fundInput) fundInput.value = selected?.dataset?.sourceFund || "";
+          if (amtInput)  amtInput.value  = selected?.dataset?.amountFmt || "";
+        }
+      }
+
+    }catch(err){
+      console.error(err);
+      if (hint) hint.textContent = "Network error while loading control numbers.";
+    }
+  }
+
+  /* ===== MODAL OPEN/CLOSE ===== */
+  function overlayClick(e){
+    if (e.target && e.target.id === "addModalOverlay") closeAddModal();
+  }
+
+  function openAddModal(){
+    const overlay = document.getElementById("addModalOverlay");
+    if (!overlay) return;
+
+    overlay.classList.add("active");
+    document.body.classList.add("modal-open");
+
+    loadReceivedControlNos();
+
+    const first = document.getElementById("selectHere");
+    if (first) first.focus();
+  }
+
+  function closeAddModal(){
+    const overlay = document.getElementById("addModalOverlay");
+    if (!overlay) return;
+    overlay.classList.remove("active");
+    document.body.classList.remove("modal-open");
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeAddModal();
+  });
+
+  // ==========================================================
+  // ✅ Reset modal fields after success
+  // ==========================================================
+  function resetAddModalForm(){
+    const form = document.getElementById("addDocForm");
+    if (!form) return;
+
+    form.reset();
+
+    const selectHere = document.getElementById("selectHere");
+    const docType = document.getElementById("documentType");
+    const sendTo = document.getElementById("sendTo");
+    const hint = document.getElementById("selectHereHint");
+    const fundInput = document.getElementById("sourceOfFund");
+    const amtInput  = document.getElementById("amountField");
+
+    if (selectHere) selectHere.value = "";
+    if (docType) docType.innerHTML = `<option value="">--Select Here--</option>`;
+    if (sendTo) sendTo.innerHTML = `<option value="">--Select Here--</option>`;
+    if (fundInput) fundInput.value = "";
+    if (amtInput)  amtInput.value = "";
+
+    resetSignatories("--Select Here--");
+    updateStatusOptionsByDocType("");
+    if (hint) hint.textContent = "";
+
+    loadReceivedControlNos();
+  }
+
+  /* ==========================================================
+     ✅ SUBMIT ADD MODAL
+     ========================================================== */
+  async function submitAddModal(event){
+    event.preventDefault();
+
+    const form = document.getElementById("addDocForm");
+    const formData = new FormData(form);
+
+    try{
+      const res = await fetch("/ome/add-document", {
+        method: "POST",
+        body: formData,
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || !data.success){
+        alert(data.message || "Failed to add document.");
+        return;
+      }
+
+      // ✅ refresh table
+      await loadTransmittingDocuments();
+
+      resetAddModalForm();
+      closeAddModal();
+      alert("Document sent successfully!");
+    }catch(err){
+      console.error(err);
+      alert("Network error while sending document.");
+    }
+  }
+
+  /* ===== ICON BUTTON ACTIONS ===== */
+  function onAdd(){ openAddModal(); }
+
+  // ==========================================================
+  // ✅ TABLE POPULATION + PAGINATION (functional rows per page)
+  // ==========================================================
+
+  let TRANSMITTING_ROWS = [];
+  let filteredRows = [];
+  let tablePageSize = 10;
+  let tableCurrentPage = 1;
+
+  function escapeHtml(str){
+    return String(str ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function getTotalPages(){
+    const total = filteredRows.length;
+    return Math.max(1, Math.ceil(total / tablePageSize));
+  }
+
+  function clampPage(){
+    const totalPages = getTotalPages();
+    if (tableCurrentPage < 1) tableCurrentPage = 1;
+    if (tableCurrentPage > totalPages) tableCurrentPage = totalPages;
+  }
+
+  async function loadTransmittingDocuments(){
+    const tbody = document.getElementById("tableBody");
+    if (!tbody) {
+      console.warn("⚠️ tableBody not found. Add: <tbody id='tableBody'></tbody>");
+      return;
+    }
+
+    tbody.innerHTML = `<tr><td colspan="6" style="padding:16px; text-align:center;">Loading...</td></tr>`;
+
+    try{
+      const res = await fetch("/ome/api/transmitting-documents", {
+        method: "GET",
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || !data.success){
+        tbody.innerHTML = `<tr><td colspan="6" style="padding:16px; text-align:center; color:#b91c1c;">
+          ${escapeHtml(data.message || "Failed to load transmitting documents.")}
+        </td></tr>`;
+        return;
+      }
+
+      TRANSMITTING_ROWS = Array.isArray(data.rows) ? data.rows : [];
+      filteredRows = [...TRANSMITTING_ROWS];
+
+      tableCurrentPage = 1;
+      clampPage();
+      renderTransmittingTable();
+
+    }catch(err){
+      console.error(err);
+      tbody.innerHTML = `<tr><td colspan="6" style="padding:16px; text-align:center; color:#b91c1c;">
+        Network error while loading transmitting documents.
+      </td></tr>`;
+    }
+  }
+
+  function renderTransmittingTable(){
+    const tbody = document.getElementById("tableBody");
+    if (!tbody) return;
+
+    clampPage();
+
+    const total = filteredRows.length;
+    const totalPages = getTotalPages();
+
+    const start = (tableCurrentPage - 1) * tablePageSize;
+    const end = start + tablePageSize;
+    const pageRows = filteredRows.slice(start, end);
+
+    tbody.innerHTML = "";
+
+    if (total === 0){
+      tbody.innerHTML = `<tr><td colspan="6" style="padding:16px; text-align:center; color:#6b7280;">
+        No transmitting documents found.
+      </td></tr>`;
+    } else {
+      for (const r of pageRows){
+        const controlLabel = `${escapeHtml(r.code || "")}${escapeHtml(r.control_no || "")}`;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="col-control">${controlLabel}</td>
+          <td class="col-title">${escapeHtml(r.program || "")}</td>
+          <td class="col-doc">${escapeHtml(r.document_type || "")}</td>
+          <td class="col-sendto">${escapeHtml(r.send_to || "")}</td>
+          <td class="col-sign">${escapeHtml(r.signatories || "")}</td>
+          <td class="col-date">${escapeHtml(r.created_at || "")}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+    }
+
+    const pageLabel = document.getElementById("pageLabel");
+    if (pageLabel) pageLabel.textContent = `Page ${tableCurrentPage} of ${totalPages}`;
+
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    if (prevBtn) prevBtn.disabled = (tableCurrentPage <= 1);
+    if (nextBtn) nextBtn.disabled = (tableCurrentPage >= totalPages);
+  }
+
+  function prevPage(){
+    if (tableCurrentPage > 1){
+      tableCurrentPage--;
+      renderTransmittingTable();
+    }
+  }
+
+  function nextPage(){
+    const totalPages = getTotalPages();
+    if (tableCurrentPage < totalPages){
+      tableCurrentPage++;
+      renderTransmittingTable();
+    }
+  }
+
+  function changeRowsPerPage(val){
+    const v = parseInt(val, 10);
+    if (Number.isNaN(v) || v <= 0) return;
+
+    tablePageSize = v;
+    tableCurrentPage = 1;
+    renderTransmittingTable();
+  }
+
+  function applySearch(){
+    const inp = document.getElementById("searchInput");
+    const q = (inp ? inp.value : "").trim().toLowerCase();
+
+    tableCurrentPage = 1;
+
+    if (!q){
+      filteredRows = [...TRANSMITTING_ROWS];
+      renderTransmittingTable();
+      return;
+    }
+
+    filteredRows = TRANSMITTING_ROWS.filter(r => {
+      const hay = `
+        ${r.code || ""} ${r.control_no || ""} ${r.program || ""}
+        ${r.document_type || ""} ${r.send_to || ""} ${r.signatories || ""}
+        ${r.status || ""} ${r.created_at || ""}
+      `.toLowerCase();
+      return hay.includes(q);
+    });
+
+    renderTransmittingTable();
+  }
+
+  function clearSearch(){
+    const inp = document.getElementById("searchInput");
+    if (inp) inp.value = "";
+    filteredRows = [...TRANSMITTING_ROWS];
+    tableCurrentPage = 1;
+    renderTransmittingTable();
+  }
+
+  function showLoader(message = "Loading...") {
+    const msg = document.getElementById("loaderMessage");
+    if (msg) msg.textContent = message;
+    document.body.classList.add("loading");
+  }
+
+  function hideLoader() {
+    document.body.classList.remove("loading");
+  }
+
+  function goBackToDashboard(event){
+    event.preventDefault();
+
+    const backBtn = document.getElementById("backBtn");
+    if (backBtn) {
+      backBtn.style.pointerEvents = "none";
+      backBtn.style.opacity = "0.7";
+    }
+
+    showLoader("Returning to dashboard...");
+
+    setTimeout(() => {
+      window.location.href = "/ome/dashboard";
+    }, 1500);
+  }
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <meta charset="UTF-8" />
+  <title>For Obligation</title>
+
+  <style>
+    body{
+      margin:0;
+      font-family:Arial, sans-serif;
+      background:#f4f6f8;
+      font-size:14px;
+      display:flex;
+      flex-direction:column;
+      min-height:100vh;
+    }
+    html, body{ height:100%; }
+
+    /* ===== HEADER ===== */
+    header{
+      background:#1f2937;
+      color:#fff;
+      padding:15px 30px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    header h1{ margin:0; font-size:18px; }
+
+    .back-btn{
+      color:#fff;
+      text-decoration:none;
+      font-size:13px;
+      cursor:pointer;
+    }
+    .back-btn:hover{ opacity:.85; }
+
+    /* ===== MAIN ===== */
+    main{
+      flex:1;
+      padding:18px 22px;
+    }
+
+    /* ===== PAGE TOP BAR (LEFT ACTIONS + SEARCH) ===== */
+    .page-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:14px;
+    }
+
+    /* ✅ LEFT BUTTONS (Signed / Return) */
+    .left-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .btn-outline{
+      height:34px;
+      padding:0 14px;
+      border-radius:6px;
+      border:1px solid #d1d5db;
+      background:#ffffff;
+      color:#111827;
+      font-weight:700;
+      cursor:pointer;
+      font-size:13px;
+      white-space:nowrap;
+    }
+    .btn-outline:hover{
+      background:#f3f4f6;
+    }
+    .btn-outline.active{
+      border-color:#0b5ed7;
+      color:#0b5ed7;
+      background:#eef2ff;
+    }
+
+    .searchbar{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .searchbar input{
+      width:260px;
+      height:34px;
+      padding:0 12px;
+      border:1px solid #d1d5db;
+      border-radius:6px;
+      outline:none;
+      font-size:13px;
+      background:#fff;
+    }
+    .btn{
+      height:34px;
+      padding:0 14px;
+      border-radius:6px;
+      border:1px solid transparent;
+      font-weight:700;
+      cursor:pointer;
+      font-size:13px;
+    }
+    .btn-primary{
+      background:#0b5ed7;
+      color:#fff;
+    }
+    .btn-primary:hover{ filter:brightness(.95); }
+    .btn-secondary{
+      background:#6b7280;
+      color:#fff;
+    }
+    .btn-secondary:hover{ filter:brightness(.95); }
+
+    /* ===== TABLE WRAP ===== */
+    .table-wrap{
+      background:#fff;
+      border-radius:10px;
+      overflow:hidden;
+      box-shadow:0 6px 18px rgba(0,0,0,.08);
+      border:1px solid #e5e7eb;
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+    }
+    thead th{
+      background:#1f2937;
+      color:#fff;
+      padding:14px 12px;
+      text-align:left;
+      font-weight:50;
+      font-size:12px;
+      white-space:nowrap;
+    }
+    tbody td{
+      padding:14px 12px;
+      border-top:1px solid #eef2f7;
+      font-size:10px;
+      color:#111827;
+      background:#fff;
+      vertical-align:middle;
+    }
+    .no-records td{
+      text-align:center;
+      padding:22px 12px;
+      color:#111827;
+      background:#f3f6fc;
+      font-weight:50;
+      font-size:10px;
+    }
+
+    /* ===== PAGINATION ===== */
+    .pager{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:18px;
+      padding:18px 0 0;
+    }
+    .pager-btn{
+      background:#0b5ed7;
+      color:#fff;
+      border:none;
+      padding:10px 18px;
+      border-radius:8px;
+      font-weight:700;
+      font-size:14px;
+      cursor:pointer;
+      line-height:1;
+      box-shadow:0 2px 0 rgba(0,0,0,.08);
+    }
+    .pager-btn:hover{ filter:brightness(.95); }
+    .pager-btn:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+    .pager-label{
+      font-size:16px;
+      color:#111827;
+      font-weight:500;
+    }
+
+    /* ===== FOOTER ===== */
+    footer{
+      background:#e5e7eb;
+      text-align:center;
+      padding:15px;
+      font-size:12px;
+    }
+
+    @media (max-width: 850px){
+      .page-top{ flex-direction:column; align-items:flex-start; }
+      .left-actions{ width:100%; }
+      .searchbar{ width:100%; }
+      .searchbar input{ width:100%; flex:1; }
+    }
+
+    /* ===== BLUR ===== */
+    .blur-backdrop {
+      position: fixed;
+      inset: 0;
+      backdrop-filter: blur(6px);
+      background: rgba(255,255,255,0.15);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      z-index: 998;
+    }
+    body.loading .blur-backdrop {
+      opacity: 1;
+      pointer-events: all;
+    }
+    /* ✅ blur activates when any modal is open */
+    body.modal-open .blur-backdrop{
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    /* ===== LOADER ===== */
+    .loader {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      background: rgba(255,255,255,0.6);
+      z-index: 999;
+    }
+    body.loading .loader { display: flex; }
+
+    .loader-text {
+      display: flex;
+      gap: 6px;
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      color: #1f2937;
+    }
+    .loader-text span { animation: jump 1.2s infinite ease-in-out; }
+    .loader-text span:nth-child(1){animation-delay:0s}
+    .loader-text span:nth-child(2){animation-delay:.1s}
+    .loader-text span:nth-child(3){animation-delay:.2s}
+    .loader-text span:nth-child(4){animation-delay:.3s}
+    .loader-text span:nth-child(5){animation-delay:.4s}
+    .loader-text span:nth-child(6){animation-delay:.5s}
+
+    @keyframes jump {
+      0%,100%{transform:translateY(0)}
+      50%{transform:translateY(-15px)}
+    }
+
+    .loader-subtext {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #374151;
+    }
+
+    /* ===== ACTION ICONS ===== */
+    .action-icons{
+      display:flex;
+      justify-content:center;
+      gap:10px;
+    }
+    .icon-btn{
+      border:none;
+      background:transparent;
+      cursor:pointer;
+      font-size:15px;
+      padding:6px;
+      border-radius:6px;
+      transition:background .15s ease, transform .1s ease;
+    }
+    .icon-btn:hover{
+      background:#eef2ff;
+      transform:translateY(-1px);
+    }
+    .icon-btn.return{ color:#374151; }
+    .icon-btn.obligate{ color:#0b5ed7; }
+
+    /* ==========================================================
+       ✅ MODALS (fade + scale)
+       ========================================================== */
+    .modal-overlay{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      z-index: 2000;
+      padding: 24px;
+
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+    }
+
+    .modal-overlay.active{
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .modal{
+      width: 760px;
+      max-width: 92vw;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 18px 50px rgba(0,0,0,.25);
+      overflow: hidden;
+
+      opacity: 0;
+      transform: scale(0.96) translateY(10px);
+
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    .modal-overlay.active .modal{
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+
+    .modal-inner{
+      padding: 26px 34px 22px;
+    }
+
+    .modal-title{
+      font-size: 18px;
+      font-weight: 800;
+      color:#111827;
+      margin:0 0 12px 0;
+    }
+    .modal-divider{
+      height:2px;
+      background:#e5e7eb;
+      margin: 0 0 18px 0;
+    }
+
+    .modal-form{
+      display:flex;
+      flex-direction:column;
+      gap: 14px;
+    }
+
+    .field label{
+      display:block;
+      font-size: 13px;
+      font-weight: 700;
+      color:#0b2c56;
+      margin-bottom: 6px;
+    }
+
+    .field input,
+    .field select{
+      width:100%;
+      height: 42px;
+      border: 1px solid #d1d5db;
+      border-radius: 7px;
+      padding: 0 12px;
+      font-size: 14px;
+      outline:none;
+      background:#fff;
+      box-sizing:border-box;
+    }
+
+    .field input[readonly]{
+      background:#f3f4f6;
+      color:#111827;
+    }
+
+    /* ✅ 2-column row */
+    .row-2col{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      align-items:start;
+    }
+    @media (max-width: 700px){
+      .row-2col{ grid-template-columns: 1fr; }
+    }
+
+    .modal-actions{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-top: 6px;
+    }
+
+    .btn-save{
+      background:#0a7a2a;
+      color:#fff;
+      border:none;
+      height: 38px;
+      padding: 0 22px;
+      border-radius: 8px;
+      font-weight: 800;
+      cursor:pointer;
+      font-size: 14px;
+    }
+    .btn-save:hover{ filter: brightness(.95); }
+
+    .btn-cancel-link{
+      color:#0b5ed7;
+      text-decoration:none;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .btn-cancel-link:hover{ text-decoration:underline; }
+
+    @media (max-width: 520px){
+      .modal-inner{ padding: 20px; }
+    }
+
+    /* ==========================================================
+       ✅ LIST MODALS (SIGNED + RETURNED)
+       ========================================================== */
+    .signed-modal,
+    .returned-modal{
+      width: 1500px;
+      max-width: 96vw;
+      height: 90vh;
+      max-height: 100vh;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .signed-modal .modal-inner,
+    .returned-modal .modal-inner{
+      height:100%;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .signed-header,
+    .returned-header{
+      font-size: 22px;
+      font-weight: 800;
+      color:#0b2c56;
+      margin: 0 0 14px 0;
+    }
+
+    .signed-divider,
+    .returned-divider{
+      height:2px;
+      background:#e5e7eb;
+      margin: 0 0 18px 0;
+    }
+
+    .signed-body,
+    .returned-body{
+      flex:1;
+      overflow:auto;
+      padding-right: 6px;
+    }
+
+    .signed-table-wrap,
+    .returned-table-wrap{
+      border:1px solid #e5e7eb;
+      border-radius: 12px;
+      overflow:hidden;
+      box-shadow: 0 10px 26px rgba(0,0,0,.10);
+      background:#fff;
+    }
+
+    .signed-table,
+    .returned-table{
+      width:100%;
+      border-collapse:collapse;
+    }
+
+    .signed-table thead th,
+    .returned-table thead th{
+      background:#1f2937;
+      color:#fff;
+      padding:14px 12px;
+      text-align:left;
+      font-weight:700;
+      font-size:14px;
+      white-space:nowrap;
+    }
+
+    .signed-table tbody td,
+    .returned-table tbody td{
+      padding: 18px 12px;
+      border-top:1px solid #eef2f7;
+      font-size:12px;
+      color:#374151;
+      text-align:center;
+      vertical-align:middle;
+    }
+
+    .signed-empty,
+    .returned-empty{
+      font-style: italic;
+      color:#6b7280;
+    }
+
+    .signed-pager,
+    .returned-pager{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:18px;
+      padding:18px 0 10px;
+    }
+
+    .btn-close{
+      background:#e5e7eb;
+      border:none;
+      height: 38px;
+      padding: 0 18px;
+      border-radius: 10px;
+      font-weight:800;
+      cursor:pointer;
+      color:#111827;
+    }
+    .btn-close:hover{ filter: brightness(.97); }
+
+    /* ✅ stop background scroll when modal opens */
+    body.modal-open{ overflow:hidden; }
+  </style>
+</head>
+
+<body>
+
+  <!-- BLUR -->
+  <div class="blur-backdrop"></div>
+
+  <!-- LOADER -->
+  <div class="loader">
+    <div class="loader-text">
+      <span>A</span><span>L</span><span>A</span><span>B</span><span>A</span><span>T</span>
+    </div>
+    <div class="loader-subtext" id="loaderMessage">Loading...</div>
+  </div>
+
+  <!-- ✅ OBLIGATE MODAL -->
+  <div class="modal-overlay" id="obligateOverlay" onclick="obligateOverlayClick(event)">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="obligateTitle" onclick="event.stopPropagation()">
+      <div class="modal-inner">
+        <div class="modal-title" id="obligateTitle">Obligate Document</div>
+        <div class="modal-divider"></div>
+
+        <form class="modal-form" id="obligateForm" onsubmit="submitObligation(event)">
+          <input type="hidden" id="ob_doc_id" name="doc_id" value="">
+
+          <div class="field">
+            <label for="ob_control_no">Control No.</label>
+            <input id="ob_control_no" type="text" value="" readonly>
+          </div>
+
+          <div class="field">
+            <label for="ob_code">Code</label>
+            <input id="ob_code" type="text" value="" readonly>
+          </div>
+
+          <div class="field">
+            <label for="ob_doc_type">Document Type</label>
+            <input id="ob_doc_type" type="text" value="" readonly>
+          </div>
+
+          <div class="field">
+            <label for="ob_project_title">Program Title</label>
+            <input id="ob_project_title" type="text" value="" readonly>
+          </div>
+
+          <div class="row-2col">
+            <div class="field">
+              <label for="ob_source_of_fund">Source of Fund</label>
+              <input id="ob_source_of_fund" type="text" value="" readonly>
+            </div>
+
+            <div class="field">
+              <label for="ob_amount">Amount</label>
+              <input id="ob_amount" type="text" value="" readonly>
+            </div>
+          </div>
+
+          <div class="row-2col">
+            <div class="field">
+              <label for="ob_req_no">Obligation Request No.</label>
+              <input id="ob_req_no" name="obligation_request_no" type="text" placeholder="">
+            </div>
+
+            <div class="field">
+              <label for="ob_status">Status:</label>
+              <select id="ob_status" name="status" required>
+                <option value="select_here">--Select Here--</option>
+                <option value="for_signature">For Signature</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button class="btn-save" type="submit">Obligate</button>
+            <a href="#" class="btn-cancel-link" onclick="closeObligateModal(); return false;">Cancel</a>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ RETURN MODAL -->
+  <div class="modal-overlay" id="returnOverlay" onclick="returnOverlayClick(event)">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="returnTitle" onclick="event.stopPropagation()">
+      <div class="modal-inner">
+        <div class="modal-title" id="returnTitle">Return Document</div>
+        <div class="modal-divider"></div>
+
+        <form class="modal-form" id="returnForm" onsubmit="submitReturn(event)">
+          <input type="hidden" id="rt_doc_id" name="doc_id" value="">
+
+          <div class="field">
+            <label for="rt_control_no">Control No.</label>
+            <input id="rt_control_no" type="text" value="" readonly>
+          </div>
+
+          <div class="field">
+            <label for="rt_code">Code</label>
+            <input id="rt_code" type="text" value="" readonly>
+          </div>
+
+          <div class="field">
+            <label for="rt_doc_type">Document Type</label>
+            <input id="rt_doc_type" type="text" value="" readonly>
+          </div>
+
+          <div class="field">
+            <label for="rt_project_title">Program Title</label>
+            <input id="rt_project_title" type="text" value="" readonly>
+          </div>
+
+          <div class="row-2col">
+            <div class="field">
+              <label for="rt_source_of_fund">Source of Fund</label>
+              <input id="rt_source_of_fund" type="text" value="" readonly>
+            </div>
+
+            <div class="field">
+              <label for="rt_amount">Amount</label>
+              <input id="rt_amount" type="text" value="" readonly>
+            </div>
+          </div>
+
+          <div class="row-2col">
+            <div class="field">
+              <label for="rt_reason">Return Reason</label>
+              <input id="rt_reason" name="returned_reason" type="text" placeholder="">
+            </div>
+
+            <div class="field">
+              <label for="rt_status">Status:</label>
+              <select id="rt_status" name="status" required>
+                <option value="select_here">--Select Here--</option>
+                <option value="returned">Returned</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button class="btn-save" type="submit">Return</button>
+            <a href="#" class="btn-cancel-link" onclick="closeReturnModal(); return false;">Cancel</a>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ OBLIGATED LIST MODAL -->
+  <div class="modal-overlay" id="obligatedListOverlay" onclick="signedOverlayClick(event)">
+    <div class="modal signed-modal" role="dialog" aria-modal="true" aria-labelledby="signedListTitle" onclick="event.stopPropagation()">
+      <div class="modal-inner">
+
+        <div class="signed-header" id="signedListTitle">Obligated Documents</div>
+        <div class="signed-divider"></div>
+
+        <div class="signed-body">
+          <div class="signed-table-wrap">
+            <table class="signed-table">
+              <thead>
+                <tr>
+                  <th style="width:10px;">ID</th>
+                  <th style="width:90px;">Control No.</th>
+                  <th style="width:80px;">Code</th>
+                  <th>Program/Project Title</th>
+                  <th style="width:90px;">Document Type</th>
+                  <th style="width:90px;">Amount</th>
+                  <th style="width:120px;">Source of Fund</th>
+                  <th style="width:90px;">Status</th>
+                  <th style="width:90px;">OBR No.</th>
+                  <th style="width:140px;">Obligated Date</th>
+                </tr>
+              </thead>
+
+              <tbody id="obligatedTbody">
+                {% if obligated_rows and obligated_rows|length > 0 %}
+                  {% for s in obligated_rows %}
+                    <tr class="signed-row">
+                      <td>{{ s["id"] }}</td>
+                      <td>{{ s["control_no"] }}</td>
+                      <td>{{ s["code"] }}</td>
+                      <td style="text-align:left;">{{ s["program"] or "-" }}</td>
+                      <td>{{ s["document_type"] or "-" }}</td>
+                      <td>{{ s["amount_fmt"] or "0.00" }}</td>
+                      <td style="text-align:left;">{{ s["source_of_fund"] or "-" }}</td>
+                      <td>{{ s["status"] or "obligated" }}</td>
+                      <td>{{ s["obr_no"] }}</td>
+                      <td>{{ s["obligated_date"] or "-" }}</td>
+                    </tr>
+                  {% endfor %}
+                {% else %}
+                  <tr class="signed-empty-row">
+                    <!-- ✅ FIXED: you have 10 columns -->
+                    <td colspan="10" class="signed-empty">No obligated documents found.</td>
+                  </tr>
+                {% endif %}
+              </tbody>
+
+            </table>
+          </div>
+
+          <div class="signed-pager">
+            <button class="pager-btn" type="button" id="signedPrevBtn" onclick="signedPrev()">Prev</button>
+            <span class="pager-label" id="signedPageLabel">Page 1 of 1</span>
+            <button class="pager-btn" type="button" id="signedNextBtn" onclick="signedNext()">Next</button>
+          </div>
+        </div>
+
+        <div class="signed-bottom-actions">
+          <button class="btn-close" type="button" onclick="closeSignedModal()">Close</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ RETURNED LIST MODAL -->
+  <div class="modal-overlay" id="returnedListOverlay" onclick="returnedOverlayClick(event)">
+    <div class="modal returned-modal" role="dialog" aria-modal="true" aria-labelledby="returnedListTitle" onclick="event.stopPropagation()">
+      <div class="modal-inner">
+
+        <div class="returned-header" id="returnedListTitle">Returned Documents</div>
+        <div class="returned-divider"></div>
+
+        <div class="returned-body">
+          <div class="returned-table-wrap">
+            <table class="returned-table">
+              <thead>
+                <tr>
+                  <th style="width:10px;">ID</th>
+                  <th style="width:90px;">Control No.</th>
+                  <th style="width:80px;">Code</th>
+                  <th>Program/Project Title</th>
+                  <th style="width:90px;">Document Type</th>
+                  <th style="width:90px;">Amount</th>
+                  <th style="width:120px;">Source of Fund</th>
+                  <th style="width:90px;">Status</th>
+                  <th style="width:150px;">Returned Date</th>
+                  <th style="width:220px;">Return Reason</th>
+                </tr>
+              </thead>
+
+              <tbody id="returnedTbody">
+                {% if returned_rows and returned_rows|length > 0 %}
+                  {% for r in returned_rows %}
+                    <tr class="returned-row">
+                      <td>{{ r["id"] }}</td>
+                      <td>{{ r["control_no"] }}</td>
+                      <td>{{ r["code"] }}</td>
+                      <td style="text-align:left;">{{ r["program"] or "-" }}</td>
+                      <td>{{ r["document_type"] }}</td>
+                      <td>
+                        {% if r["amount"] is not none %}
+                          {{ "{:,.2f}".format(r["amount"]) }}
+                        {% else %}
+                          0.00
+                        {% endif %}
+                      </td>
+                      <td style="text-align:left;">{{ r["source_of_fund"] or "-" }}</td>
+                      <td>{{ r["status"] or "returned" }}</td>
+                      <td>{{ r["returned_date"] or "-" }}</td>
+                      <td style="text-align:left;">{{ r["returned_reason"] or "-" }}</td>
+                    </tr>
+                  {% endfor %}
+                {% else %}
+                  <tr class="returned-empty-row">
+                    <!-- ✅ FIXED: you have 10 columns -->
+                    <td colspan="10" class="returned-empty">No returned documents found.</td>
+                  </tr>
+                {% endif %}
+              </tbody>
+
+            </table>
+          </div>
+
+          <div class="returned-pager">
+            <button class="pager-btn" type="button" id="returnedPrevBtn" onclick="returnedPrev()">Prev</button>
+            <span class="pager-label" id="returnedPageLabel">Page 1 of 1</span>
+            <button class="pager-btn" type="button" id="returnedNextBtn" onclick="returnedNext()">Next</button>
+          </div>
+        </div>
+
+        <div class="returned-bottom-actions">
+          <button class="btn-close" type="button" onclick="closeReturnedModal()">Close</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== HEADER ===== -->
+  <header>
+    <h1>🏢MBO | For Obligation</h1>
+    <a href="#" class="back-btn" onclick="goBackToSelectAction(event)">← Back</a>
+  </header>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main>
+
+    <div class="page-top">
+      <div class="left-actions">
+        <button class="btn-outline" id="btnSigned" type="button" onclick="goObligated()">Obligated</button>
+        <button class="btn-outline" id="btnReturned" type="button" onclick="goReturned()">Return</button>
+      </div>
+
+      <form class="searchbar" method="GET" action="/mbo/for-obligation">
+        <input
+          id="searchInput"
+          name="q"
+          type="text"
+          value="{{ search_query or '' }}"
+          placeholder="Search Control No..." />
+        <button class="btn btn-primary" type="submit">Search</button>
+        <button class="btn btn-secondary" type="button" onclick="clearSearch()">Clear</button>
+      </form>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:5px;">ID</th>
+            <th style="width:70px;">Control No.</th>
+            <th style="width:20px;">Code</th>
+            <th style="width:100px;">Document Type</th>
+            <th>Program/Project Title</th>
+            <th style="width:80px;">Amount</th>
+            <th style="width:90px;">Source of Fund</th>
+            <th style="width:140px; text-align:center;">Action</th>
+          </tr>
+        </thead>
+
+        <tbody id="tbody">
+          {% if rows and rows|length > 0 %}
+            {% for r in rows %}
+              <tr>
+                <td>{{ r["id"] }}</td>
+                <td>{{ r["control_no"] }}</td>
+                <td>{{ r["code"] }}</td>
+                <td>{{ r["document_type"] }}</td>
+                <td>{{ r["project_title"] }}</td>
+                <td style="text-align:left; font-weight:600;">
+                  {{ r["amount_fmt"] }}
+                </td>
+                <td>{{ r["source_of_fund"] or "-" }}</td>
+
+                <td style="text-align:center;">
+                  <div class="action-icons">
+                    <button
+                      class="icon-btn return"
+                      title="Return"
+                      type="button"
+                      onclick='returnDocument(
+                        {{ r["id"]|tojson }},
+                        {{ r["control_no"]|tojson }},
+                        {{ r["code"]|tojson }},
+                        {{ r["document_type"]|tojson }},
+                        {{ r["project_title"]|tojson }},
+                        {{ (r["source_of_fund"] or "")|tojson }},
+                        {{ (r["amount"] or 0)|tojson }}
+                      )'>
+                      <i class="fa-solid fa-rotate-left"></i>
+                    </button>
+
+                    <button
+                      class="icon-btn obligate"
+                      title="Obligate"
+                      type="button"
+                      onclick='obligateDocument(
+                        {{ r["id"]|tojson }},
+                        {{ r["control_no"]|tojson }},
+                        {{ r["code"]|tojson }},
+                        {{ r["document_type"]|tojson }},
+                        {{ r["project_title"]|tojson }},
+                        {{ (r["source_of_fund"] or "")|tojson }},
+                        {{ (r["amount"] or 0)|tojson }}
+                      )'>
+                      <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr class="no-records">
+              <td colspan="8">No records found</td>
+            </tr>
+          {% endif %}
+        </tbody>
+
+      </table>
+    </div>
+
+    <div class="pager">
+      <button id="prevBtn" class="pager-btn" disabled>Prev</button>
+      <span id="pageLabel" class="pager-label">Page 1 of 1</span>
+      <button id="nextBtn" class="pager-btn">Next</button>
+    </div>
+
+  </main>
+
+  <footer>© 2026 Document Tracking System | User Panel</footer>
+
+  <script>
+    function setLoading(on, message){
+      document.body.classList.toggle("loading", !!on);
+      const el = document.getElementById("loaderMessage");
+      if (el && message) el.textContent = message;
+    }
+
+    function goBackToSelectAction(e){
+      e.preventDefault();
+      setLoading(true, "Returning...");
+      setTimeout(() => { window.location.href = "/mbo/select-action"; }, 900);
+    }
+
+    function clearSearch(){
+      window.location.href = "/mbo/for-obligation";
+    }
+
+    function prettifyDocType(s){
+      const v = String(s || "").trim();
+      if (!v) return "";
+      return v.replaceAll("_", " ").replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    function setActiveLeftButton(which){
+      const b1 = document.getElementById("btnSigned");
+      const b2 = document.getElementById("btnReturned");
+      if (b1) b1.classList.toggle("active", which === "signed");
+      if (b2) b2.classList.toggle("active", which === "returned");
+    }
+
+    /* ==========================================================
+       ✅ Modal open state manager
+       ========================================================== */
+    const MODAL_IDS = [
+      "obligateOverlay",
+      "returnOverlay",
+      "obligatedListOverlay",
+      "returnedListOverlay"
+    ];
+
+    function refreshModalState(){
+      const anyOpen = MODAL_IDS.some(id => document.getElementById(id)?.classList.contains("active"));
+      document.body.classList.toggle("modal-open", anyOpen);
+    }
+
+    function openOverlay(id){
+      const overlay = document.getElementById(id);
+      if (!overlay) return;
+      overlay.classList.add("active");
+      refreshModalState();
+    }
+
+    function closeOverlay(id){
+      const overlay = document.getElementById(id);
+      if (!overlay) return;
+      overlay.classList.remove("active");
+      refreshModalState();
+    }
+
+    /* =========================
+       ✅ OBLIGATED LIST MODAL
+       ========================= */
+    function openSignedModal(){
+      setActiveLeftButton("signed");
+      openOverlay("obligatedListOverlay");
+      initSignedPagination();
+      renderSignedPage(1);
+    }
+
+    function closeSignedModal(){
+      closeOverlay("obligatedListOverlay");
+    }
+
+    function signedOverlayClick(e){
+      if (e.target && e.target.id === "obligatedListOverlay") closeSignedModal();
+    }
+
+    /* =========================
+       ✅ RETURNED LIST MODAL
+       ========================= */
+    function openReturnedModal(){
+      setActiveLeftButton("returned");
+      openOverlay("returnedListOverlay");
+      initReturnedPagination();
+      renderReturnedPage(1);
+    }
+
+    function closeReturnedModal(){
+      closeOverlay("returnedListOverlay");
+    }
+
+    function returnedOverlayClick(e){
+      if (e.target && e.target.id === "returnedListOverlay") closeReturnedModal();
+    }
+
+    /* ✅ LEFT BUTTONS */
+    function goObligated(){ openSignedModal(); }
+    function goReturned(){ openReturnedModal(); }
+
+    /* =========================
+       ✅ OBLIGATED PAGINATION (5 rows/page)  ✅ FIXED
+       ========================= */
+    let signedAllRows = [];
+    let signedPage = 1;
+    const signedPerPage = 6;
+
+    function initSignedPagination(){
+      const tbody = document.getElementById("obligatedTbody");
+      if (!tbody) return;
+
+      // ✅ FIX: fill the correct array
+      signedAllRows = Array.from(tbody.querySelectorAll("tr.signed-row"));
+
+      if (signedAllRows.length === 0){
+        updateSignedPager(0, 0);
+        return;
+      }
+
+      const totalPages = Math.max(1, Math.ceil(signedAllRows.length / signedPerPage));
+      signedPage = 1;
+      updateSignedPager(1, totalPages);
+    }
+
+    function renderSignedPage(page){
+      if (signedAllRows.length === 0){
+        updateSignedPager(0, 0);
+        return;
+      }
+
+      const totalPages = Math.max(1, Math.ceil(signedAllRows.length / signedPerPage));
+      signedPage = Math.min(Math.max(page, 1), totalPages);
+
+      signedAllRows.forEach(tr => tr.style.display = "none");
+
+      const start = (signedPage - 1) * signedPerPage;
+      const end = start + signedPerPage;
+      signedAllRows.slice(start, end).forEach(tr => tr.style.display = "");
+
+      updateSignedPager(signedPage, totalPages);
+    }
+
+    function updateSignedPager(current, total){
+      const prevBtn = document.getElementById("signedPrevBtn");
+      const nextBtn = document.getElementById("signedNextBtn");
+      const label = document.getElementById("signedPageLabel");
+
+      if (total <= 0){
+        if (label) label.textContent = "Page 0 of 0";
+        if (prevBtn) prevBtn.disabled = true;
+        if (nextBtn) nextBtn.disabled = true;
+        return;
+      }
+
+      if (label) label.textContent = `Page ${current} of ${total}`;
+      if (prevBtn) prevBtn.disabled = (current <= 1);
+      if (nextBtn) nextBtn.disabled = (current >= total);
+    }
+
+    function signedPrev(){ renderSignedPage(signedPage - 1); }
+    function signedNext(){ renderSignedPage(signedPage + 1); }
+
+    /* =========================
+       ✅ RETURNED PAGINATION (7 rows/page)  ✅ FIXED
+       ========================= */
+    let returnedAllRows = [];
+    let returnedPage = 1;
+    const returnedPerPage = 6;
+
+    function initReturnedPagination(){
+      const tbody = document.getElementById("returnedTbody");
+      if (!tbody) return;
+
+      returnedAllRows = Array.from(tbody.querySelectorAll("tr.returned-row"));
+
+      if (returnedAllRows.length === 0){
+        updateReturnedPager(0, 0);
+        return;
+      }
+
+      const totalPages = Math.max(1, Math.ceil(returnedAllRows.length / returnedPerPage));
+      returnedPage = 1;
+      updateReturnedPager(1, totalPages);
+    }
+
+    function renderReturnedPage(page){
+      if (returnedAllRows.length === 0){
+        updateReturnedPager(0, 0);
+        return;
+      }
+
+      const totalPages = Math.max(1, Math.ceil(returnedAllRows.length / returnedPerPage));
+      returnedPage = Math.min(Math.max(page, 1), totalPages);
+
+      returnedAllRows.forEach(tr => tr.style.display = "none");
+
+      const start = (returnedPage - 1) * returnedPerPage;
+      const end = start + returnedPerPage;
+      returnedAllRows.slice(start, end).forEach(tr => tr.style.display = "");
+
+      updateReturnedPager(returnedPage, totalPages);
+    }
+
+    function updateReturnedPager(current, total){
+      const prevBtn = document.getElementById("returnedPrevBtn");
+      const nextBtn = document.getElementById("returnedNextBtn");
+      const label = document.getElementById("returnedPageLabel");
+
+      if (total <= 0){
+        if (label) label.textContent = "Page 0 of 0";
+        if (prevBtn) prevBtn.disabled = true;
+        if (nextBtn) nextBtn.disabled = true;
+        return;
+      }
+
+      if (label) label.textContent = `Page ${current} of ${total}`;
+      if (prevBtn) prevBtn.disabled = (current <= 1);
+      if (nextBtn) nextBtn.disabled = (current >= total);
+    }
+
+    function returnedPrev(){ renderReturnedPage(returnedPage - 1); }
+    function returnedNext(){ renderReturnedPage(returnedPage + 1); }
+
+    /* =========================
+       ✅ RETURN MODAL FUNCTIONS
+       ========================= */
+    function returnDocument(id, controlNo, code, documentType, projectTitle, sourceOfFund, amount){
+      document.getElementById("rt_doc_id").value = String(id ?? "");
+      document.getElementById("rt_control_no").value = String(controlNo ?? "");
+      document.getElementById("rt_code").value = String(code ?? "");
+      document.getElementById("rt_doc_type").value = prettifyDocType(documentType ?? "");
+      document.getElementById("rt_project_title").value = String(projectTitle ?? "");
+      document.getElementById("rt_source_of_fund").value = String(sourceOfFund ?? "");
+      document.getElementById("rt_reason").value = "";
+
+      const amtEl = document.getElementById("rt_amount");
+      if (amtEl) {
+        const n = Number(amount ?? 0);
+        amtEl.value = Number.isFinite(n)
+          ? n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+          : String(amount ?? "");
+      }
+
+      const statusSel = document.getElementById("rt_status");
+      if (statusSel) statusSel.value = "select_here";
+
+      openOverlay("returnOverlay");
+
+      setTimeout(() => {
+        const inp = document.getElementById("rt_reason");
+        if (inp) inp.focus();
+      }, 50);
+    }
+
+    function closeReturnModal(){
+      closeOverlay("returnOverlay");
+    }
+
+    function returnOverlayClick(e){
+      if (e.target && e.target.id === "returnOverlay") closeReturnModal();
+    }
+
+    function submitReturn(e){
+      e.preventDefault();
+
+      const docId  = document.getElementById("rt_doc_id").value;
+      const reason = document.getElementById("rt_reason").value.trim();
+      const status = document.getElementById("rt_status").value;
+
+      if (!reason){
+        alert("Return Reason is required.");
+        return;
+      }
+      if (!status || status === "select_here"){
+        alert("Please select a valid status.");
+        return;
+      }
+
+      fetch("/mbo/return-obligation-document", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "X-Requested-With": "XMLHttpRequest"
+        },
+        body: new URLSearchParams({
+          doc_id: docId,
+          returned_reason: reason,
+          status: status
+        }).toString()
+      })
+      .then(r => r.json().then(d => ({ ok: r.ok, d })))
+      .then(({ ok, d }) => {
+        if (!ok || !d.success) throw new Error(d.message || "Failed to return document.");
+        alert(d.message || "Returned successfully.");
+        closeReturnModal();
+        window.location.reload();
+      })
+      .catch(err => {
+        console.error(err);
+        alert(err.message || "Network error.");
+      });
+    }
+
+    /* =========================
+       ✅ OBLIGATE MODAL FUNCTIONS
+       ========================= */
+    function obligateDocument(id, controlNo, code, documentType, projectTitle, sourceOfFund, amount){
+      document.getElementById("ob_doc_id").value = String(id ?? "");
+      document.getElementById("ob_control_no").value = String(controlNo ?? "");
+      document.getElementById("ob_code").value = String(code ?? "");
+      document.getElementById("ob_doc_type").value = prettifyDocType(documentType ?? "");
+      document.getElementById("ob_project_title").value = String(projectTitle ?? "");
+      document.getElementById("ob_source_of_fund").value = String(sourceOfFund ?? "");
+      document.getElementById("ob_req_no").value = "";
+
+      const amtEl = document.getElementById("ob_amount");
+      if (amtEl) {
+        const n = Number(amount ?? 0);
+        amtEl.value = Number.isFinite(n)
+          ? n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+          : String(amount ?? "");
+      }
+
+      const statusSel = document.getElementById("ob_status");
+      if (statusSel) statusSel.value = "select_here";
+
+      openOverlay("obligateOverlay");
+
+      setTimeout(() => {
+        const inp = document.getElementById("ob_req_no");
+        if (inp) inp.focus();
+      }, 50);
+    }
+
+    function closeObligateModal(){
+      closeOverlay("obligateOverlay");
+    }
+
+    function obligateOverlayClick(e){
+      if (e.target && e.target.id === "obligateOverlay") closeObligateModal();
+    }
+
+    function submitObligation(e){
+      e.preventDefault();
+
+      const docId  = document.getElementById("ob_doc_id").value;
+      const reqNo  = document.getElementById("ob_req_no").value.trim();
+      const status = document.getElementById("ob_status").value;
+
+      if (!reqNo){
+        alert("Obligation Request No. is required.");
+        return;
+      }
+      if (!status || status === "select_here"){
+        alert("Please select a valid status.");
+        return;
+      }
+
+      fetch("/mbo/obligate-document", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "X-Requested-With": "XMLHttpRequest"
+        },
+        body: new URLSearchParams({
+          doc_id: docId,
+          obligation_request_no: reqNo,
+          status: status
+        }).toString()
+      })
+      .then(r => r.json().then(d => ({ ok: r.ok, d })))
+      .then(({ ok, d }) => {
+        if (!ok || !d.success) throw new Error(d.message || "Failed to obligate document.");
+        alert(d.message || "Obligated successfully.");
+        closeObligateModal();
+        window.location.reload();
+      })
+      .catch(err => {
+        console.error(err);
+        alert(err.message || "Network error.");
+      });
+    }
+
+    // ✅ ESC closes any open modal
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeObligateModal();
+        closeReturnModal();
+        closeSignedModal();
+        closeReturnedModal();
+      }
+    });
+
+    // ✅ prepare pagination (safe even if no rows)
+    document.addEventListener("DOMContentLoaded", () => {
+      initSignedPagination();
+      renderSignedPage(1);
+
+      initReturnedPagination();
+      renderReturnedPage(1);
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #f4f6f8;
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            background-color: #1f2937;
+            color: #ffffff;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        header .user-info {
+            font-size: 14px;
+        }
+
+        header a {
+            color: #60a5fa;
+            text-decoration: none;
+            margin-left: 15px;
+            cursor: pointer;
+        }
+
+        /* ===== NAV ===== */
+        .nav {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-btn {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 28px;
+            right: 0;
+            background-color: #ffffff;
+            min-width: 180px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            border-radius: 6px;
+            z-index: 1000;
+        }
+
+        .dropdown-content a {
+            display: block;
+            padding: 10px 15px;
+            color: #1f2937;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f3f4f6;
+        }
+
+        .dropdown.active .dropdown-content {
+            display: block;
+        }
+
+        /* ===== MAIN ===== */
+        main {
+            padding: 30px;
+            min-height: calc(100vh - 120px);
+            position: relative;
+            z-index: 1;
+        }
+
+        .card {
+            background-color: #ffffff;
+            padding: 25px;
+            border-radius: 8px;
+            max-width: 900px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            background-color: #e5e7eb;
+            text-align: center;
+            padding: 15px;
+            font-size: 13px;
+            color: #374151;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ===== BLUR ===== */
+        .blur-backdrop {
+            position: fixed;
+            inset: 0;
+            backdrop-filter: blur(6px);
+            background: rgba(255,255,255,0.15);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 998;
+        }
+
+        body.loading .blur-backdrop {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* ===== LOADER ===== */
+        .loader {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            background: rgba(255,255,255,0.6);
+            z-index: 999;
+        }
+
+        body.loading .loader {
+            display: flex;
+        }
+
+        .loader-text {
+            display: flex;
+            gap: 6px;
+            font-size: 36px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            color: #1f2937;
+        }
+
+        .loader-text span {
+            animation: jump 1.2s infinite ease-in-out;
+        }
+
+        .loader-text span:nth-child(1){animation-delay:0s}
+        .loader-text span:nth-child(2){animation-delay:.1s}
+        .loader-text span:nth-child(3){animation-delay:.2s}
+        .loader-text span:nth-child(4){animation-delay:.3s}
+        .loader-text span:nth-child(5){animation-delay:.4s}
+        .loader-text span:nth-child(6){animation-delay:.5s}
+
+        @keyframes jump {
+            0%,100%{transform:translateY(0)}
+            50%{transform:translateY(-15px)}
+        }
+
+        .loader-subtext {
+            margin-top: 12px;
+            font-size: 14px;
+            color: #374151;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- BLUR -->
+<div class="blur-backdrop"></div>
+
+<!-- LOADER -->
+<div class="loader">
+    <div class="loader-text">
+        <span>A</span><span>L</span><span>A</span><span>B</span><span>A</span><span>T</span>
+    </div>
+    <div class="loader-subtext" id="loaderMessage">Loading...</div>
+</div>
+
+<!-- HEADER -->
+<header>
+    <h1>📄 Document Tracking System</h1>
+
+    <div class="nav">
+        <div class="dropdown">
+            <button class="dropdown-btn" onclick="toggleDropdown(event)">Setup ▾</button>
+            <div class="dropdown-content">
+                 <a href="{{ url_for('setup_signatories') }}" onclick="openSetupSignatories(event)">Setup Signatories</a>
+
+            </div>
+        </div>
+
+        <div class="dropdown">
+            <button class="dropdown-btn" onclick="toggleDropdown(event)">Administrator ▾</button>
+            <div class="dropdown-content">
+                <a href="/manage-users" onclick="openManageUsers(event)">Manage Users</a>
+                <a href="{{ url_for('audit_trail_page') }}" onclick="openAuditTrail(event)">Audit Trail</a>
+
+
+            </div>
+        </div>
+
+        <div class="dropdown">
+            <button class="dropdown-btn" onclick="toggleDropdown(event)">Documents ▾</button>
+            <div class="dropdown-content">
+                 <a href="{{ url_for('documents') }}" onclick="openDocuments(event)">Documents</a>
+            </div>
+        </div>
+
+        <div class="user-info">
+            {{ session['user'] }} ({{ session['role'] }})
+            <a onclick="handleLogout(event)">Logout</a>
+        </div>
+    </div>
+</header>
+
+<!-- MAIN -->
+<main>
+    <div class="card">
+        <h2>Welcome, {{ session['user'] }} 👋</h2>
+        <p>You are logged in as <strong>{{ session['role'] }}</strong>.</p>
+    </div>
+</main>
+
+<!-- FOOTER -->
+<footer>
+    © 2026 Document Tracking System | Admin Dashboard
+</footer>
+
+<script>
+    function toggleDropdown(event) {
+        event.stopPropagation();
+        document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('active'));
+        event.target.parentElement.classList.toggle('active');
+    }
+
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('active'));
+    });
+
+    function showLoader(message) {
+        document.getElementById("loaderMessage").textContent = message;
+        document.body.classList.add("loading");
+    }
+
+    function handleLogout(event) {
+        event.preventDefault();
+        showLoader("Logging out...");
+        setTimeout(() => window.location.href = "/logout", 1500);
+    }
+
+
+    function openManageUsers(event) {
+    event.preventDefault();
+    showLoader("Opening Manage Users...");
+    setTimeout(() => {
+        window.location.href = "/manage-users";
+    }, 1000);
+}
+
+
+    function openAuditTrail(event) {
+    event.preventDefault();
+    showLoader("Opening Audit Trail...");
+    setTimeout(() => {
+        window.location.href = "{{ url_for('audit_trail_page') }}";
+    }, 1000);
+}
+
+
+    function openSetupSignatories(event) {
+    event.preventDefault(); // Prevent immediate navigation
+    showLoader("Opening Setup Signatories..."); // Show your loader message
+    setTimeout(() => {
+        window.location.href = "{{ url_for('setup_signatories') }}"; // Redirect after 1s
+    }, 1000);
+}
+
+        function openDocuments(event) {
+    event.preventDefault(); // Prevent immediate navigation
+    showLoader("Opening Documents..."); // Show your loader message
+    setTimeout(() => {
+        window.location.href = "{{ url_for('documents') }}"; // Redirect after 1s
+    }, 1000);
+}
+</script>
+
+</body>
+</html>

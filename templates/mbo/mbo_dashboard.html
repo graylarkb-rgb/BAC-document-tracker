@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>MBO Dashboard</title>
+
+  <style>
+    body{
+      margin:0;
+      font-family:Arial, sans-serif;
+      background:#f4f6f8;
+      font-size:14px;
+      display:flex;
+      flex-direction:column;
+      min-height:100vh;
+    }
+    html, body{ height:100%; }
+
+    /* ===== HEADER ===== */
+    header{
+      background:#1f2937;
+      color:#fff;
+      padding:15px 30px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    header h1{ margin:0; font-size:20px; }
+
+    .nav button{
+      background:none;
+      border:none;
+      color:#fff;
+      cursor:pointer;
+      font-size:14px;
+    }
+    .nav button:hover{ opacity:.85; }
+
+    /* ===== MAIN ===== */
+    main{
+      flex:1;
+      padding:20px 30px;
+    }
+
+    /* ===== CARDS ===== */
+    .cards{
+      display:grid;
+      grid-template-columns:repeat(5, minmax(180px, 1fr));
+      gap:18px;
+      margin-bottom:18px;
+    }
+    .stat-card{
+      background:#fff;
+      border-radius:12px;
+      min-height:130px;
+      box-shadow:0 2px 10px rgba(0,0,0,.08);
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      text-align:center;
+      padding:18px;
+    }
+    .stat-title{
+      font-weight:700;
+      font-size:16px;
+      color:#0b3a67;
+      margin-bottom:14px;
+    }
+    .stat-value{
+      font-size:38px;
+      font-weight:800;
+      color:#0b5ed7;
+      line-height:1;
+    }
+
+    /* ===== TABLE ===== */
+    .table-wrap{
+      background:#fff;
+      border-radius:12px;
+      overflow:hidden;
+      box-shadow:0 2px 10px rgba(0,0,0,.08);
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+    }
+    thead{
+      background:#1f2937;
+      color:#fff;
+    }
+    th, td{
+      padding:10px 12px;
+      border-bottom:1px solid #eef2f7;
+      text-align:left;
+      vertical-align:middle;
+      font-size:12px;
+    }
+
+    /* ✅ smaller font only for table body data */
+tbody td{
+  font-size: 12px;      /* adjust: 11px / 12px / 13px */
+}
+
+/* optional: make button text match the smaller row text */
+tbody td .btn{
+  font-size: 12px;
+  padding: 7px 12px;    /* optional tighter button */
+}
+
+    tbody tr:hover{ background:#f7fbff; }
+
+    .no-records{
+      text-align:center;
+      color:#6b7280;
+      padding:18px;
+    }
+
+    /* Action Button */
+    .btn{
+      border:none;
+      cursor:pointer;
+      padding:8px 14px;
+      border-radius:8px;
+      font-weight:700;
+      font-size:13px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+    .btn-receive{
+      background:#0b5ed7;
+      color:#fff;
+    }
+    .btn-receive:hover{ opacity:.9; }
+
+    .received{
+      font-weight:800;
+      color:#15803d;
+    }
+
+    /* ===== FOOTER ===== */
+    footer{
+      background:#e5e7eb;
+      text-align:center;
+      padding:15px;
+      font-size:13px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px){
+      .cards{ grid-template-columns:repeat(2, 1fr); }
+    }
+    @media (max-width: 640px){
+      .cards{ grid-template-columns:1fr; }
+    }
+
+    /* clickable card */
+    .clickable {
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+    .clickable:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+    }
+
+    /* modal overlay */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: none;
+
+      /* ✅ CENTER THE MODAL */
+      align-items: center;
+      justify-content: center;
+
+      z-index: 2000;
+      opacity: 0;
+    }
+
+    /* ✅ Ensure received overlay is above issued overlay */
+    #receivedModalOverlay {
+      z-index: 2100;
+    }
+
+    /* ✅ Ensure add document overlay sits on top of all modals */
+    #addDocumentModalOverlay{
+      z-index: 2200;
+    }
+
+    /* ✅ APPLY BLUR TO BACKGROUND (requested) */
+    .modal-overlay{
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+
+    /* modal box */
+    .modal {
+      width: 85%;
+      height: 85%;
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* header */
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .modal-header h3 {
+      margin: 0;
+      font-size: 18px;
+      color: #0b3a67;
+    }
+
+    /* close X */
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      line-height: 1;
+      color: #6b7280;
+    }
+    .modal-close:hover { color: #111827; }
+
+    /* body */
+    .modal-body {
+      padding: 14px 2px 6px;
+      color: #374151;
+      font-size: 14px;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    /* footer */
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding-top: 10px;
+    }
+
+    .modal-btn {
+      border: none;
+      cursor: pointer;
+      padding: 9px 14px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .modal-btn.primary {
+      background: #0b5ed7;
+      color: #fff;
+    }
+    .modal-btn.primary:hover { opacity: 0.92; }
+
+    .modal-btn.secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+    .modal-btn.secondary:hover { opacity: 0.92; }
+
+    /* ===== FADE-IN ANIMATION ===== */
+    @keyframes modalFadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.96);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes overlayFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* apply animation */
+    .modal-overlay.show {
+      animation: overlayFadeIn 0.2s ease-out forwards;
+    }
+
+    .modal-overlay.show .modal {
+      animation: modalFadeIn 0.25s ease-out forwards;
+    }
+
+    /* ===== MODAL TABLE (for Issued Control Numbers modal) ===== */
+    .modal-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+
+    .modal-table thead th {
+      background: #1f2937;
+      color: #fff;
+      text-align: left;
+      padding: 11px 13px;
+      font-weight: 700;
+      font-size: 14px;
+      border-bottom: none;
+    }
+
+    .modal-table thead th:first-child {
+      border-top-left-radius: 10px;
+    }
+
+    .modal-table thead th:last-child {
+      border-top-right-radius: 10px;
+    }
+
+    .modal-table tbody td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e5e7eb;
+      vertical-align: middle;
+      font-size: 11px;
+    }
+
+    .modal-table tbody tr:hover {
+      background: #f8fafc;
+    }
+
+    .modal-table .no-data {
+      text-align: center;
+      color: #6b7280;
+      font-style: italic;
+      padding: 16px;
+      font-size: 12.5px;
+    }
+
+    /* ===== FIXED COLUMN LAYOUT FOR MODAL TABLE (WIDER TITLE) ===== */
+    .modal-table {
+      table-layout: fixed;
+    }
+
+    .modal-table td:nth-child(3),
+    .modal-table th:nth-child(3) {
+      white-space: normal;
+      word-break: break-word;
+      line-height: 1.35;
+    }
+
+    .modal-table th:not(:nth-child(3)),
+    .modal-table td:not(:nth-child(3)) {
+      white-space: nowrap;
+    }
+
+    .modal-table th:nth-child(4),
+    .modal-table td:nth-child(4) {
+      text-align: right;
+      font-weight: 600;
+    }
+
+    .modal-footer-split {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-footer-left {
+      display: flex;
+      align-items: center;
+    }
+
+    .modal-footer-right {
+      display: flex;
+      gap: 10px;
+    }
+
+    /* Hide the close (X) button on Issued Control Numbers modal */
+    #issuedModalOverlay .modal-close {
+        display: none;
+    }
+
+    /* ===== PAGINATION ===== */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 15px;
+        gap: 10px;
+    }
+
+    .pagination button {
+        background: #2563eb;
+        color: #fff;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    /* ===== BLUR ===== */
+    .blur-backdrop {
+      position: fixed;
+      inset: 0;
+      backdrop-filter: blur(6px);
+      background: rgba(255,255,255,0.15);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      z-index: 998;
+    }
+
+    body.loading .blur-backdrop {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    /* ===== LOADER ===== */
+    .loader {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      background: rgba(255,255,255,0.6);
+      z-index: 999;
+    }
+
+    body.loading .loader {
+      display: flex;
+    }
+
+    .loader-text {
+      display: flex;
+      gap: 6px;
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      color: #1f2937;
+    }
+
+    .loader-text span {
+      animation: jump 1.2s infinite ease-in-out;
+    }
+
+    .loader-text span:nth-child(1){animation-delay:0s}
+    .loader-text span:nth-child(2){animation-delay:.1s}
+    .loader-text span:nth-child(3){animation-delay:.2s}
+    .loader-text span:nth-child(4){animation-delay:.3s}
+    .loader-text span:nth-child(5){animation-delay:.4s}
+    .loader-text span:nth-child(6){animation-delay:.5s}
+
+    @keyframes jump {
+      0%,100%{transform:translateY(0)}
+      50%{transform:translateY(-15px)}
+    }
+
+    .loader-subtext {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #374151;
+    }
+
+    /* ===== HEADER DROPDOWN ===== */
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .dropdown {
+      position: relative;
+    }
+
+    .dropdown-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .dropdown-btn:hover {
+      opacity: 0.85;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      top: 22px;
+      left: 0;
+      background: #ffffff;
+      min-width: 180px;
+      border-radius: 8px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+      z-index: 1000;
+      border: 1px solid #e5e7eb;
+    }
+
+    .dropdown-content a {
+      display: block;
+      padding: 10px 14px;
+      color: #111827;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .dropdown-content a:hover {
+      background: #f3f4f6;
+    }
+
+    .modal-overlay { opacity: 0; transition: opacity .2s ease; }
+    .modal-overlay.show { opacity: 1; }
+
+    /* ✅ ADD DOCUMENT MODAL - match screenshot proportions (center card, not full height) */
+    #addDocumentModalOverlay .modal{
+      height: auto;
+      max-height: 92vh;
+      padding: 26px 28px;
+      border-radius: 18px;
+      box-shadow: 0 18px 60px rgba(0,0,0,0.30);
+    }
+
+    /* make iframe behave like an embedded form area */
+    #addDocumentModalOverlay iframe{
+      width: 100%;
+      height: 650px;
+      border: none;
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    /* ===== ADD DOCUMENT MODAL ===== */
+    #addDocumentModal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 3000;
+    }
+
+    #addDocumentModal.show {
+      display: flex;
+    }
+
+    .add-document {
+      background: #fff;
+      width: 92%;
+      max-width: 720px;
+      border-radius: 16px;
+      padding: 26px 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .add-document h3 {
+      text-align: center;
+      margin: 0 0 18px;
+      color: #0b3a67;
+    }
+
+    /* form layout */
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #0b3a67;
+    }
+
+    .form-group select,
+    .form-group input[type="file"] {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      font-size: 14px;
+    }
+
+    .form-group select:focus,
+    .form-group input[type="file"]:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+    }
+
+    .form-actions {
+      margin-top: 16px;
+    }
+
+    .send-btn {
+      width: 100%;
+      background: #0b3b6f;
+      color: #fff;
+      border: none;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .send-btn:hover {
+      opacity: 0.95;
+    }
+
+    .cancel-link {
+      display: block;
+      text-align: center;
+      margin-top: 12px;
+      font-weight: 700;
+      color: #0b3a67;
+      text-decoration: none;
+    }
+
+    /* ================================
+       ✅ FIX APPLIED: USE SIMPLE MODAL
+       Keep iframe modal in code, but do not show it
+    =================================== */
+    #addDocumentModalOverlay {
+      display: none !important;
+    }
+
+    #addDocumentModal.show{
+      display:flex !important;
+    }
+
+    #addDocumentModal .add-document h3{
+      font-size: 26px;
+      font-weight: 800;
+    }
+
+    .cancel-link:hover{
+      text-decoration: underline;
+    }
+
+
+    .pagination button:disabled{
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+  </style>
+
+</head>
+
+<body>
+
+<!-- BLUR -->
+<div class="blur-backdrop"></div>
+
+<!-- LOADER -->
+<div class="loader">
+  <div class="loader-text">
+    <span>A</span><span>L</span><span>A</span><span>B</span><span>A</span><span>T</span>
+  </div>
+  <div class="loader-subtext" id="loaderMessage">Loading...</div>
+</div>
+
+<header>
+  <h1>🏢 MBO Dashboard</h1>
+  <div class="nav">
+
+    <!-- 📂 DOCUMENT DROPDOWN -->
+    <div class="dropdown">
+      <button class="dropdown-btn" onclick="toggleDocumentDropdown(event)">
+        Documents ▾
+      </button>
+
+      <div class="dropdown-content" id="documentDropdown">
+        <a href="#" onclick="openAddDocumentMBO(event)">Add Document</a>
+      </div>
+    </div>
+
+    <!-- LOGOUT -->
+    <a href="#" onclick="handleLogout(event)" style="color:white; cursor:pointer;">
+      Logout
+    </a>
+
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== TOP CARDS ===== -->
+  <div class="cards">
+    <div class="stat-card">
+      <div class="stat-title">Total Documents</div>
+      <div class="stat-value">{{ total_docs_mbo or 0 }}</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-title">Pending</div>
+      <div class="stat-value">{{ pending_count_mbo or 0 }}</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-title">To Received</div>
+      <div class="stat-value">{{ to_receive_count_mbo or 0 }}</div>
+    </div>
+
+   <div class="stat-card clickable" onclick="goToReceivedMBO()">
+  <div class="stat-title">Received Documents</div>
+  <div class="stat-value">{{ received_count_mbo or 0 }}</div>
+</div>
+
+
+    <div class="stat-card clickable" onclick="openIssuedModal()">
+      <div class="stat-title">Issued Control No.</div>
+      <div class="stat-value" id="issuedCountValue">{{ issued_count_mbo or 0 }}</div>
+    </div>
+  </div>
+
+  <!-- ===== TABLE ===== -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:60px;">ID</th>
+          <th style="width:120px;">Control No.</th>
+          <th style="width:50%;">Program/Project Title</th>
+          <th style="width:100px;">Document Type</th>
+          <th style="width:90px;">Code</th>
+          <th style="width:120px;">Sender</th>
+          <th style="width:110px;">Action</th>
+        </tr>
+      </thead>
+
+    <tbody id="mainTableBody">
+  {% if transmitted_rows_mbo and transmitted_rows_mbo|length > 0 %}
+    {% for row in transmitted_rows_mbo %}
+      <tr class="main-row">
+        <td>{{ row.id }}</td>
+        <td>{{ row.control_no }}</td>
+        <td>{{ row.program }}</td>
+        <td>{{ row.document_type }}</td>
+        <td>{{ row.code }}</td>
+        <td>{{ row.sender or '-' }}</td>
+        <td>
+          {% if row.received and row.received_date %}
+            <span class="received">Received</span>
+          {% else %}
+            <button class="btn btn-receive"
+                    type="button"
+                    onclick="receiveTransmittingDoc({{ row.id }})">
+              📥 Receive
+            </button>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  {% else %}
+    <tr id="mainNoRecordsRow">
+      <td colspan="7" class="no-records">No records found</td>
+    </tr>
+  {% endif %}
+</tbody>
+
+
+    </table>
+
+    <div class="pagination" id="mainPagination" style="display:flex;justify-content:center;align-items:center;gap:14px;padding:14px;">
+  <button class="modal-btn primary" type="button" id="mainPrevBtn">Prev</button>
+  <span id="mainPageInfo">Page 1 of 1</span>
+  <button class="modal-btn primary" type="button" id="mainNextBtn">Next</button>
+</div>
+
+  </div>
+
+</main>
+
+<!-- ===== ISSUED CONTROL NO MODAL ===== -->
+<div class="modal-overlay" id="issuedModalOverlay" onclick="overlayClick(event)">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="issuedModalTitle" onclick="event.stopPropagation();">
+    <div class="modal-header">
+      <h3 id="issuedModalTitle">Issued Control Numbers</h3>
+      <button class="modal-close" onclick="closeIssuedModal()" aria-label="Close">&times;</button>
+    </div>
+
+    <div class="modal-body">
+
+      <table class="modal-table">
+        <colgroup>
+          <col style="width:60px">
+          <col style="width:120px">
+          <col style="width:auto">
+          <col style="width:120px">
+          <col style="width:150px">
+          <col style="width:80px">
+          <col style="width:160px">
+          <col style="width:120px">
+        </colgroup>
+        <thead>
+          <tr>
+            <th style="width:80px;">ID</th>
+            <th style="width:170px;">Control No.</th>
+            <th>Program/Project Title</th>
+            <th style="width:150px;">Amount</th>
+            <th style="width:200px;">Source of Fund</th>
+            <th style="width:120px;">Code</th>
+            <th style="width:150px;">Issued Date</th>
+            <th style="width:100px;">Action</th>
+          </tr>
+        </thead>
+
+        <tbody id="issuedTableBody">
+          {% if issued_rows_mbo and issued_rows_mbo|length > 0 %}
+            {% for row in issued_rows_mbo %}
+              <tr class="issued-row" data-match="1">
+                <td>{{ row.id }}</td>
+                <td>{{ row.control_no }}</td>
+                <td>{{ row.program }}</td>
+                <td>{{ row.amount }}</td>
+                <td>{{ row.source_of_fund }}</td>
+                <td>{{ row.code }}</td>
+                <td>{{ row.issued_date }}</td>
+                <td>
+                  {% if row.received_date %}
+                    <span class="received">Received</span>
+                  {% else %}
+                    <form method="POST"
+                          action="{{ url_for('mbo_receive_control_no') }}"
+                          style="margin:0;"
+                          data-id="{{ row.id }}"
+                          onsubmit="return ajaxReceive(event, this);">
+                      <input type="hidden" name="id" value="{{ row.id }}">
+                      <button type="submit" class="btn btn-receive">📥 Receive</button>
+                    </form>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr id="issuedNoMatchRow">
+              <td colspan="8" class="no-data">No issued control numbers found.</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+
+      <!-- PAGINATION -->
+      <div class="pagination" style="display:flex;justify-content:center;align-items:center;gap:14px;margin-top:14px;">
+        <button class="modal-btn primary" type="button" onclick="changeIssuedPage(currentIssuedPage - 1)">Prev</button>
+        <span id="issuedPageInfo">Page 1 of 1</span>
+        <button class="modal-btn primary" type="button" onclick="changeIssuedPage(currentIssuedPage + 1)">Next</button>
+      </div>
+
+    </div>
+
+    <div class="modal-footer modal-footer-split">
+      <div class="modal-footer-left">
+        <button class="modal-btn secondary" type="button" onclick="event.stopPropagation(); openReceivedModal(event)">
+          📥Received
+        </button>
+      </div>
+
+      <div class="modal-footer-right">
+        <button class="modal-btn secondary" onclick="closeIssuedModal()">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== RECEIVED LIST MODAL (2nd modal) ===== -->
+<div class="modal-overlay" id="receivedModalOverlay" onclick="receivedOverlayClick(event)" style="display:none;">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="receivedModalTitle" onclick="event.stopPropagation();">
+
+    <div class="modal-header">
+      <h3 id="receivedModalTitle">Received Control Numbers</h3>
+    </div>
+
+    <div class="modal-body">
+
+      <table class="modal-table">
+        <colgroup>
+          <col style="width:60px">
+          <col style="width:120px">
+          <col style="width:auto">
+          <col style="width:120px">
+          <col style="width:150px">
+          <col style="width:80px">
+          <col style="width:160px">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Control No.</th>
+            <th>Program/Project Title</th>
+            <th>Amount</th>
+            <th>Source of Fund</th>
+            <th>Code</th>
+            <th>Received Date</th>
+          </tr>
+        </thead>
+
+        <tbody id="receivedTableBody">
+          {% if received_rows_mbo and received_rows_mbo|length > 0 %}
+            {% for row in received_rows_mbo %}
+              <tr class="received-row" data-match="1">
+                <td>{{ row.id }}</td>
+                <td>{{ row.control_no }}</td>
+                <td>{{ row.program }}</td>
+                <td>{{ row.amount }}</td>
+                <td>{{ row.source_of_fund }}</td>
+                <td>{{ row.code }}</td>
+                <td>{{ row.received_date }}</td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr id="receivedNoMatchRow">
+              <td colspan="7" class="no-data">No received records found.</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+
+      <!-- PAGINATION (RECEIVED) -->
+      <div class="pagination" style="display:flex;justify-content:center;align-items:center;gap:14px;margin-top:14px;">
+        <button class="modal-btn primary" type="button" onclick="changeReceivedPage(currentReceivedPage - 1)">Prev</button>
+        <span id="receivedPageInfo">Page 1 of 1</span>
+        <button class="modal-btn primary" type="button" onclick="changeReceivedPage(currentReceivedPage + 1)">Next</button>
+      </div>
+
+    </div>
+
+    <div class="modal-footer modal-footer-split">
+      <div class="modal-footer-left"></div>
+      <div class="modal-footer-right">
+        <button class="modal-btn secondary" type="button" onclick="closeReceivedModal()">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== ADD DOCUMENT MODAL (IFRAME VERSION - KEPT BUT DISABLED BY CSS) ===== -->
+<div class="modal-overlay" id="addDocumentModalOverlay" onclick="addDocumentOverlayClick(event)" style="display:none;">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="addDocumentModalTitle" onclick="event.stopPropagation();" style="max-width:820px; width:92%;">
+
+    <div class="modal-header">
+      <h3 id="addDocumentModalTitle" style="width:100%; text-align:center;">Add Document</h3>
+    </div>
+
+    <div class="modal-body" style="padding-top:10px;">
+      <iframe
+        id="addDocumentFrame"
+        src="/documents?embed=1"
+        style="width:100%; height:650px; border:none; border-radius:10px;"
+      ></iframe>
+
+      <div style="text-align:center; margin-top:10px;">
+        <a href="#" onclick="closeAddDocumentModal(); return false;" style="text-decoration:none;">
+          ← Cancel
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== ADD DOCUMENT MODAL (SIMPLE VERSION - THIS ONE OPENS) ===== -->
+<div id="addDocumentModal" style="display: none;">
+  <div class="add-document">
+    <h3>Add Document</h3>
+
+    <form id="addDocumentForm" enctype="multipart/form-data">
+      <div class="form-group">
+        <label for="controlNumberSelect">Select here</label>
+        <select id="controlNumberSelect" name="control_number" class="form-control">
+          <option value="">--Select Here--</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="documentType">Document Type:</label>
+        <select id="documentType" name="document_type">
+          <option value="">--Select Here--</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="sendTo">Send to:</label>
+        <select id="sendTo" name="send_to">
+          <option value="">--Select Here--</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="uploadFile">Upload File:</label>
+        <input type="file" id="uploadFile" name="document_file">
+      </div>
+
+      <div class="form-group">
+        <label for="signatories">Signatories:</label>
+        <select id="signatories" name="signatories">
+          <option value="">--Select Here--</option>
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="send-btn">Send</button>
+        <a href="#" id="cancelAddDocument" class="cancel-link">← Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<footer>© 2026 Document Tracking System | User Panel</footer>
+
+<script>
+/* ===== MODAL TABLE PAGINATION (ISSUED) ===== */
+const issuedTableBody = document.getElementById("issuedTableBody");
+const issuedAllRows = issuedTableBody
+  ? Array.from(issuedTableBody.querySelectorAll("tr.issued-row"))
+  : [];
+
+const issuedPageInfo = document.getElementById("issuedPageInfo");
+const issuedNoMatchRow = document.getElementById("issuedNoMatchRow");
+
+let currentIssuedPage = 1;
+const issuedRowsPerPage = 11;
+
+function renderIssuedPage(page) {
+  if (!issuedTableBody) return;
+
+  const visible = issuedAllRows.filter(r => r.dataset.match === "1");
+  const pages = Math.ceil(visible.length / issuedRowsPerPage);
+  currentIssuedPage = Math.max(1, Math.min(page, pages || 1));
+
+  issuedTableBody.innerHTML = "";
+
+  if (visible.length === 0) {
+    if (issuedNoMatchRow) {
+      issuedNoMatchRow.style.display = "";
+      issuedTableBody.appendChild(issuedNoMatchRow);
+    }
+    if (issuedPageInfo) issuedPageInfo.textContent = `Page 1 of 1`;
+    return;
+  }
+
+  const slice = visible.slice(
+    (currentIssuedPage - 1) * issuedRowsPerPage,
+    currentIssuedPage * issuedRowsPerPage
+  );
+
+  slice.forEach(r => issuedTableBody.appendChild(r));
+
+  if (issuedPageInfo) issuedPageInfo.textContent = `Page ${currentIssuedPage} of ${pages || 1}`;
+}
+
+function changeIssuedPage(p) {
+  renderIssuedPage(p);
+}
+
+/* ===== MODAL TABLE PAGINATION (RECEIVED) ===== */
+const receivedTableBody = document.getElementById("receivedTableBody");
+let receivedAllRows = receivedTableBody
+  ? Array.from(receivedTableBody.querySelectorAll("tr.received-row"))
+  : [];
+
+const receivedPageInfo = document.getElementById("receivedPageInfo");
+const receivedNoMatchRow = document.getElementById("receivedNoMatchRow");
+
+let currentReceivedPage = 1;
+const receivedRowsPerPage = 11;
+
+function renderReceivedPage(page) {
+  if (!receivedTableBody) return;
+
+  const visible = receivedAllRows.filter(r => r.dataset.match === "1");
+  const pages = Math.ceil(visible.length / receivedRowsPerPage);
+  currentReceivedPage = Math.max(1, Math.min(page, pages || 1));
+
+  receivedTableBody.innerHTML = "";
+
+  if (visible.length === 0) {
+    if (receivedNoMatchRow) {
+      receivedNoMatchRow.style.display = "";
+      receivedTableBody.appendChild(receivedNoMatchRow);
+    }
+    if (receivedPageInfo) receivedPageInfo.textContent = `Page 1 of 1`;
+    return;
+  }
+
+  const slice = visible.slice(
+    (currentReceivedPage - 1) * receivedRowsPerPage,
+    currentReceivedPage * receivedRowsPerPage
+  );
+
+  slice.forEach(r => receivedTableBody.appendChild(r));
+
+  if (receivedPageInfo) receivedPageInfo.textContent = `Page ${currentReceivedPage} of ${pages || 1}`;
+}
+
+function changeReceivedPage(p) {
+  renderReceivedPage(p);
+}
+
+/* ✅ helper to insert new received row instantly (no reload) */
+function addRowToReceivedTable(rowData) {
+  if (!rowData) return;
+
+  const tbody = document.getElementById("receivedTableBody");
+  if (!tbody) return;
+
+  const noRow = document.getElementById("receivedNoMatchRow");
+  if (noRow) noRow.remove();
+
+  const tr = document.createElement("tr");
+  tr.className = "received-row";
+  tr.setAttribute("data-match", "1");
+  tr.innerHTML = `
+    <td>${rowData.id}</td>
+    <td>${rowData.control_no}</td>
+    <td>${rowData.program}</td>
+    <td>${rowData.amount}</td>
+    <td>${rowData.source_of_fund}</td>
+    <td>${rowData.code}</td>
+    <td>${rowData.received_date}</td>
+  `;
+
+  receivedAllRows.unshift(tr);
+
+  const overlay = document.getElementById("receivedModalOverlay");
+  const isOpen = overlay && overlay.style.display === "flex";
+  if (isOpen) renderReceivedPage(currentReceivedPage);
+}
+
+function handleBack(event){
+  event.preventDefault();
+  window.history.back();
+}
+
+function openIssuedModal() {
+  const overlay = document.getElementById("issuedModalOverlay");
+  overlay.style.display = "flex";
+
+  requestAnimationFrame(() => {
+    overlay.classList.add("show");
+    renderIssuedPage(1);
+  });
+
+  document.body.style.overflow = "hidden";
+}
+
+function closeIssuedModal() {
+  const overlay = document.getElementById("issuedModalOverlay");
+  overlay.classList.remove("show");
+
+  setTimeout(() => {
+    overlay.style.display = "none";
+  }, 200);
+
+  const receivedOverlay = document.getElementById("receivedModalOverlay");
+  const addModal = document.getElementById("addDocumentModal");
+
+  const receivedOpen = receivedOverlay && receivedOverlay.style.display === "flex";
+  const addOpen = addModal && addModal.classList.contains("show");
+
+  document.body.style.overflow = (receivedOpen || addOpen) ? "hidden" : "";
+}
+
+function overlayClick(event) {
+  if (event.target.id === "issuedModalOverlay") {
+    closeIssuedModal();
+  }
+}
+
+function openReceivedModal(event) {
+  if (event) event.preventDefault();
+
+  const overlay = document.getElementById("receivedModalOverlay");
+  if (!overlay) {
+    console.error("receivedModalOverlay not found in the DOM");
+    return;
+  }
+
+  overlay.style.display = "flex";
+
+  requestAnimationFrame(() => {
+    overlay.classList.add("show");
+    renderReceivedPage(1);
+  });
+
+  document.body.style.overflow = "hidden";
+}
+
+function closeReceivedModal() {
+  const overlay = document.getElementById("receivedModalOverlay");
+  if (!overlay) return;
+
+  overlay.classList.remove("show");
+
+  setTimeout(() => {
+    overlay.style.display = "none";
+  }, 200);
+
+  const issuedOverlay = document.getElementById("issuedModalOverlay");
+  const addModal = document.getElementById("addDocumentModal");
+
+  const issuedOpen = issuedOverlay && issuedOverlay.style.display === "flex";
+  const addOpen = addModal && addModal.classList.contains("show");
+
+  document.body.style.overflow = (issuedOpen || addOpen) ? "hidden" : "";
+}
+
+function receivedOverlayClick(event) {
+  if (event.target.id === "receivedModalOverlay") {
+    closeReceivedModal();
+  }
+}
+
+function printReceivedTable() {
+  // intentionally blank (no window.print)
+}
+
+/* ✅ AJAX RECEIVE */
+function ajaxReceive(event, formEl) {
+  if (event) event.preventDefault();
+
+  const trPreview = formEl.closest("tr");
+  const controlNo = trPreview?.children[1]?.textContent?.trim() || "";
+  const confirmed = confirm(
+    `Do you want to receive this Control Number?\n\n${controlNo}`
+  );
+
+  if (!confirmed) return false;
+
+  const btn = formEl.querySelector("button[type='submit']");
+  const formData = new URLSearchParams(new FormData(formEl));
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Receiving...";
+  }
+
+  fetch(formEl.action, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "X-Requested-With": "XMLHttpRequest"
+    },
+    body: formData.toString()
+  })
+  .then(res => res.json().then(data => ({ ok: res.ok, data })))
+  .then(({ ok, data }) => {
+    if (!ok || !data.success) {
+      throw new Error(data.message || "Receive failed");
+    }
+
+    const tr = formEl.closest("tr");
+    if (tr) {
+      const idx = issuedAllRows.indexOf(tr);
+      if (idx !== -1) issuedAllRows.splice(idx, 1);
+      tr.remove();
+    }
+
+    renderIssuedPage(currentIssuedPage);
+
+    const countEl = document.getElementById("issuedCountValue");
+    if (countEl) countEl.textContent = data.new_count;
+
+    addRowToReceivedTable(data.received_row);
+  })
+  .catch((err) => {
+    alert(err.message || "Failed to receive document.");
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "📥 Receive";
+    }
+  });
+
+  return false;
+}
+
+function handleLogout(event) {
+  event.preventDefault();
+
+  document.body.classList.add("loading");
+
+  const msg = document.getElementById("loaderMessage");
+  if (msg) msg.textContent = "Logging out...";
+
+  setTimeout(() => {
+    window.location.replace("/logout");
+  }, 1200);
+}
+
+function toggleDocumentDropdown(event) {
+  event.stopPropagation();
+
+  const dropdown = document.getElementById("documentDropdown");
+  dropdown.style.display =
+    dropdown.style.display === "block" ? "none" : "block";
+}
+
+document.addEventListener("click", function () {
+  const dropdown = document.getElementById("documentDropdown");
+  if (dropdown) dropdown.style.display = "none";
+});
+
+/* =========================================================
+   ✅ ONLY ONE Add Document open/close handler
+========================================================= */
+function openAddDocumentModal(event) {
+  if (event) event.preventDefault();
+
+  const dd = document.getElementById("documentDropdown");
+  if (dd) dd.style.display = "none";
+
+  const modal = document.getElementById("addDocumentModal");
+  if (!modal) {
+    console.error("addDocumentModal not found");
+    return;
+  }
+
+  modal.classList.add("show");
+  modal.style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+
+function closeAddDocumentModal() {
+  const modal = document.getElementById("addDocumentModal");
+  if (!modal) return;
+
+  modal.classList.remove("show");
+  modal.style.display = "none";
+
+  const issuedOverlay = document.getElementById("issuedModalOverlay");
+  const receivedOverlay = document.getElementById("receivedModalOverlay");
+
+  const issuedOpen = issuedOverlay && issuedOverlay.style.display === "flex";
+  const receivedOpen = receivedOverlay && receivedOverlay.style.display === "flex";
+
+  document.body.style.overflow = (issuedOpen || receivedOpen) ? "hidden" : "";
+}
+
+function addDocumentOverlayClick(event) {
+  if (event && event.target && event.target.id === "addDocumentModalOverlay") {
+    // no-op
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const modal = document.getElementById("addDocumentModal");
+  if (modal) {
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeAddDocumentModal();
+    });
+  }
+
+  const cancel = document.getElementById("cancelAddDocument");
+  if (cancel) {
+    cancel.addEventListener("click", (e) => {
+      e.preventDefault();
+      closeAddDocumentModal();
+    });
+  }
+});
+
+document.addEventListener("keydown", function(e) {
+  if (e.key !== "Escape") return;
+
+  const addModal = document.getElementById("addDocumentModal");
+  const receivedOverlay = document.getElementById("receivedModalOverlay");
+  const issuedOverlay = document.getElementById("issuedModalOverlay");
+
+  if (addModal && addModal.classList.contains("show")) {
+    closeAddDocumentModal();
+    return;
+  }
+  if (receivedOverlay && receivedOverlay.style.display === "flex") {
+    closeReceivedModal();
+    return;
+  }
+  if (issuedOverlay && issuedOverlay.style.display === "flex") {
+    closeIssuedModal();
+    return;
+  }
+});
+
+function showLoader(message = "Loading...") {
+  const msg = document.getElementById("loaderMessage");
+  if (msg) msg.textContent = message;
+  document.body.classList.add("loading");
+}
+
+function hideLoader() {
+  document.body.classList.remove("loading");
+}
+
+function openAddDocumentMBO(event) {
+  event.preventDefault();
+
+  const dropdown = document.getElementById("documentDropdown");
+  if (dropdown) dropdown.style.display = "none";
+
+  showLoader("Opening Add Document...");
+
+  setTimeout(() => {
+    window.location.href = "/add_document_mbo";
+  }, 600);
+}
+
+
+  /* =========================================================
+   ✅ mbo_dashboard table
+========================================================= */
+function receiveTransmittingDoc(id) {
+  const ok = confirm("Mark this document as received?");
+  if (!ok) return;
+
+  fetch("/mbo/receive-transmitted", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "X-Requested-With": "XMLHttpRequest"
+    },
+    body: new URLSearchParams({ id }).toString()
+  })
+  .then(r => r.json().then(d => ({ ok: r.ok, d })))
+  .then(({ ok, d }) => {
+    if (!ok || !d.success) throw new Error(d.message || "Failed");
+    window.location.reload();
+  })
+  .catch(err => alert(err.message || "Error"));
+}
+
+
+/* ============================
+   ✅ MAIN TABLE PAGINATION (5 rows per page)
+============================ */
+const mainTableBody = document.getElementById("mainTableBody");
+const mainNoRecordsRow = document.getElementById("mainNoRecordsRow");
+
+let mainAllRows = mainTableBody
+  ? Array.from(mainTableBody.querySelectorAll("tr.main-row"))
+  : [];
+
+const mainPrevBtn = document.getElementById("mainPrevBtn");
+const mainNextBtn = document.getElementById("mainNextBtn");
+const mainPageInfo = document.getElementById("mainPageInfo");
+const mainPagination = document.getElementById("mainPagination");
+
+let currentMainPage = 1;
+const mainRowsPerPage = 6;
+
+function renderMainPage(page) {
+  if (!mainTableBody) return;
+
+  // if there are no data rows, show "No records found" and hide pagination
+  if (!mainAllRows || mainAllRows.length === 0) {
+    if (mainNoRecordsRow) mainNoRecordsRow.style.display = "";
+    if (mainPagination) mainPagination.style.display = "none";
+    return;
+  }
+
+  // hide "No records found" row when data exists
+  if (mainNoRecordsRow) mainNoRecordsRow.style.display = "none";
+
+  const totalPages = Math.max(1, Math.ceil(mainAllRows.length / mainRowsPerPage));
+  currentMainPage = Math.max(1, Math.min(page, totalPages));
+
+  // clear tbody then append only the current slice
+  mainTableBody.innerHTML = "";
+
+  const start = (currentMainPage - 1) * mainRowsPerPage;
+  const end = start + mainRowsPerPage;
+  const slice = mainAllRows.slice(start, end);
+
+  slice.forEach(row => mainTableBody.appendChild(row));
+
+  // update page info
+  if (mainPageInfo) mainPageInfo.textContent = `Page ${currentMainPage} of ${totalPages}`;
+
+  // enable/disable buttons
+  if (mainPrevBtn) mainPrevBtn.disabled = currentMainPage === 1;
+  if (mainNextBtn) mainNextBtn.disabled = currentMainPage === totalPages;
+
+  // show pagination
+  if (mainPagination) mainPagination.style.display = "flex";
+}
+
+// button handlers
+if (mainPrevBtn) {
+  mainPrevBtn.addEventListener("click", () => renderMainPage(currentMainPage - 1));
+}
+if (mainNextBtn) {
+  mainNextBtn.addEventListener("click", () => renderMainPage(currentMainPage + 1));
+}
+
+// initial render
+document.addEventListener("DOMContentLoaded", () => {
+  renderMainPage(1);
+});
+
+
+
+
+
+/* ============================
+   ✅ Open select action
+============================ */
+
+   function showLoader(message) {
+    const msgEl = document.getElementById("loaderMessage");
+    if (msgEl) msgEl.textContent = message || "Loading...";
+    document.body.classList.add("loading");
+  }
+
+  function goToReceivedMBO() {
+    showLoader("Opening received documents...");
+
+    // ✅ delay so loader is visible before redirect
+    setTimeout(() => {
+      // IMPORTANT: make sure this route exists in Flask
+      window.location.href = "{{ url_for('select_action_mbo') }}";
+      // If your endpoint name is different, replace select_action_mbo accordingly.
+    }, 1200); // adjust (ex: 1500 for 1.5s)
+  }
+</script>
+
+</body>
+</html>

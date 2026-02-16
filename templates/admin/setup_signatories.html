@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Setup of Signatories</title>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        /* ===== GLOBAL ===== */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            font-size: 13px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===== HEADER ===== */
+       header {
+    background-color: #1f2937;
+    color: #fff;
+    padding: 14px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+        header h1 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        header .back-btn {
+            color: #fff;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        main.content {
+            padding: 25px 30px;
+            flex: 1;
+        }
+
+        /* ===== TITLE BAR ===== */
+       .title-bar {
+        display: flex;
+        justify-content: flex-end; /* move button to the right */
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+
+
+        .title-bar h2 {
+            margin: 0;
+            font-size: 18px;
+            color: #0b3a6e;
+        }
+
+        .add-btn {
+        background: #1f2937;
+        color: #fff;
+        border: none;
+        padding: 8px 14px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 13px;
+         }
+
+        .add-btn:hover {
+        background: #111827;
+        }
+
+        .add-btn i {
+            margin-right: 6px;
+        }
+
+        /* ===== SEARCH BAR ===== */
+        .search-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .search-bar input {
+            width: 260px;
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .search-bar button {
+            background: #1f2937;
+            border: none;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .search-bar button:hover {
+            background: #111827;
+        }
+
+
+        /* ===== TABLE ===== */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+       thead {
+        background: #1f2937;
+        color: #fff;
+    }
+
+
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tbody tr:hover {
+            background: #f1f5f9;
+        }
+
+        /* ===== ACTION BUTTON ===== */
+        .icon-btn {
+            background: none;
+            border: none;
+            color: #0b5ed7;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            background: #e5e7eb;
+            text-align: center;
+            padding: 12px;
+            font-size: 13px;
+        }
+
+              /* ===== BLUR ===== */
+        .blur-backdrop {
+            position: fixed;
+            inset: 0;
+            backdrop-filter: blur(6px);
+            background: rgba(255,255,255,0.15);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 998;
+        }
+
+        body.loading .blur-backdrop {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* ===== LOADER ===== */
+        .loader {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            background: rgba(255,255,255,0.6);
+            z-index: 999;
+        }
+
+        body.loading .loader {
+            display: flex;
+        }
+
+        .loader-text {
+            display: flex;
+            gap: 6px;
+            font-size: 36px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            color: #1f2937;
+        }
+
+        .loader-text span {
+            animation: jump 1.2s infinite ease-in-out;
+        }
+
+        .loader-text span:nth-child(1){animation-delay:0s}
+        .loader-text span:nth-child(2){animation-delay:.1s}
+        .loader-text span:nth-child(3){animation-delay:.2s}
+        .loader-text span:nth-child(4){animation-delay:.3s}
+        .loader-text span:nth-child(5){animation-delay:.4s}
+        .loader-text span:nth-child(6){animation-delay:.5s}
+
+        @keyframes jump {
+            0%,100%{transform:translateY(0)}
+            50%{transform:translateY(-15px)}
+        }
+
+        .loader-subtext {
+            margin-top: 12px;
+            font-size: 14px;
+            color: #374151;
+        }
+
+
+     /* ============================
+   MODAL STYLES
+=============================== */
+
+/* Modal overlay */
+.modal {
+    display: none;          /* HIDDEN by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.35);
+    backdrop-filter: blur(4px);
+    justify-content: center;
+    align-items: center;
+}
+
+/* Modal card */
+.modal-card {
+    background-color: #fff;
+    padding: 30px 35px;
+    border-radius: 12px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Modal heading */
+.modal-card h2 {
+    margin: 0 0 15px;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+/* Form inside modal */
+.modal-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* spacing between inputs and selects */
+}
+
+/* Inputs and selects */
+.modal-card input,
+.modal-card select {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    font-size: 0.95rem;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+.modal-card input:focus,
+.modal-card select:focus {
+    border-color: #3b82f6;
+}
+
+/* Modal buttons */
+.modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px; /* more space from fields */
+}
+
+.btn-primary {
+    background-color: #3b82f6;
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: #2563eb;
+}
+
+.btn-secondary {
+    background-color: #f3f4f6;
+    color: #111827;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.btn-secondary:hover {
+    background-color: #e5e7eb;
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+    from {opacity: 0; transform: translateY(-15px);}
+    to {opacity: 1; transform: translateY(0);}
+}
+
+
+.flash-messages {
+    margin-bottom: 15px;
+}
+
+.flash {
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.flash.success {
+    background-color: #dcfce7;
+    color: #065f46;
+    border: 1px solid #10b981;
+}
+
+.flash.error {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #ef4444;
+}
+
+.toast {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    background-color: #d1fae5;   /* light green */
+    color: #065f46;              /* dark green text */
+    border: 1px solid #10b981;   /* green border */
+
+    padding: 14px 22px;
+    border-radius: 8px;
+
+    font-size: 14px;
+    font-weight: 500;
+    font-family: Arial, sans-serif;
+
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+
+    opacity: 0;
+    pointer-events: none;
+    z-index: 2000;
+    transition: opacity 0.3s ease;
+}
+
+
+.toast-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.25);
+            backdrop-filter: blur(4px);
+            z-index: 1999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+#clearBtn {
+    background: #9ca3af;
+    border: none;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#clearBtn:hover {
+    background: #6b7280;
+}
+
+
+
+    </style>
+</head>
+
+<body>
+
+<!-- Centered success message -->
+<div id="toastOverlay" class="toast-overlay"></div>
+<div id="toastMessage" class="toast"></div>
+
+
+
+<!-- ===== BLUR ===== -->
+<div class="blur-backdrop"></div>
+
+<!-- ===== LOADER ===== -->
+<div class="loader">
+    <div class="loader-text">
+        <span>A</span><span>L</span><span>A</span><span>B</span><span>A</span><span>T</span>
+    </div>
+    <div class="loader-subtext" id="loaderMessage">Loading...</div>
+</div>
+
+<header>
+    <h1>Setup of Signatories</h1>
+    <a href="#" class="back-btn" onclick="goBackToDashboard(event)">← Back</a>
+</header>
+
+<main class="content">
+
+ <div class="title-bar">
+    <button class="add-btn" onclick="openAddModal()">
+        <i class="fa fa-plus"></i> Add Signatory
+    </button>
+</div>
+
+
+    <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search signatory...">
+    <button id="searchBtn"><i class="fa fa-search"></i></button>
+    <button id="clearBtn" title="Clear search">
+        <i class="fa fa-times"></i>
+    </button>
+</div>
+
+
+  <table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Office</th>
+            <th>Designation</th>
+            <th>Remarks</th>   <!-- NEW -->
+            <th>Action</th>
+        </tr>
+    </thead>
+<tbody id="signatoriesTable">
+    {% if signatories %}
+        {% for row in signatories %}
+        <tr>
+            <td>{{ row.id }}</td>
+            <td>{{ row.name }}</td>
+            <td>{{ row.office_department }}</td>
+            <td>{{ row.designation }}</td>
+            <td>{{ row.remarks }}</td>
+            <td>
+                <!-- Edit -->
+                <button class="icon-btn edit-btn" data-id="{{ row.id }}">
+                    <i class="fa fa-pen"></i>
+                </button>
+
+                <!-- Delete -->
+                <form method="POST"
+                      action="{{ url_for('delete_signatory', id=row.id) }}"
+                      style="display:inline;"
+                      onsubmit="return confirmDelete();">
+                    <button type="submit" class="icon-btn delete-btn">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    {% else %}
+        <tr>
+            <td colspan="6" style="text-align:center; padding: 20px; color: #6b7280;">
+                No Signatories Found
+            </td>
+        </tr>
+    {% endif %}
+</tbody>
+
+
+</table>
+
+
+</main>
+
+<!-- ============================
+     ADD SIGNATORY MODAL
+=============================== -->
+<div class="modal" id="addSignatoryModal">
+    <div class="modal-card">
+        <h2>Add Signatory</h2>
+
+        <form method="POST" action="{{ url_for('add_signatory') }}">
+            <input type="text" name="name" placeholder="Full Name" required>
+
+            <select name="office" required>
+                <option value="">Select Office</option>
+                <option>MMO</option>
+                <option>MBO</option>
+                <option>OMAcc</option>
+                <option>PESO</option>
+                <option>HRMO</option>
+                <option>GSO</option>
+                <option>MSWDO</option>
+                <option>OMAss</option>
+                <option>MTO</option>
+                <option>MCR</option>
+                <option>TOURISM</option>
+                <option>MPDO</option>
+                <option>SB</option>
+                <option>SSB</option>
+                <option>MHO</option>
+                <option>MDRRMO</option>
+                <option>OME</option>
+                <option>PORT</option>
+                <option>MAO</option>
+                <option>BAC</option>
+                <option>INSPECTOR</option>
+            </select>
+
+            <!-- Changed designation from input to select -->
+            <select name="designation" required>
+                <option value="">Select Designation</option>
+                <option>Municipal Mayor</option>
+                <option>Municipal Budget Officer</option>
+                <option>Municipal Treasurer</option>
+                <option>Municipal Accountant</option>
+                <option>BAC Secretariat</option>
+                <option>BAC Member</option>
+                <option>General Services Officer</option>
+                <option>Inspector</option>
+                <!-- Add more designations as needed -->
+            </select>
+
+            <div class="modal-buttons">
+                <button type="submit" class="btn-primary">Add Signatory</button>
+                <button type="button" class="btn-secondary" onclick="closeAddModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- ============================
+     EDIT SIGNATORY MODAL
+=============================== -->
+<div class="modal" id="editSignatoryModal">
+    <div class="modal-card">
+        <h2>Edit Signatory</h2>
+
+        <form id="editSignatoryForm" method="POST">
+            <input type="hidden" name="id" id="editId">
+
+            <input type="text" name="name" id="editName" placeholder="Full Name" required>
+
+            <select name="office" id="editOffice" required>
+                <option value="">Select Office</option>
+                <option>MMO</option>
+                <option>MBO</option>
+                <option>OMAcc</option>
+                <option>PESO</option>
+                <option>HRMO</option>
+                <option>GSO</option>
+                <option>MSWDO</option>
+                <option>OMAss</option>
+                <option>MTO</option>
+                <option>MCR</option>
+                <option>TOURISM</option>
+                <option>MPDO</option>
+                <option>SB</option>
+                <option>SSB</option>
+                <option>MHO</option>
+                <option>MDRRMO</option>
+                <option>OME</option>
+                <option>PORT</option>
+                <option>MAO</option>
+                <option>BAC</option>
+                <option>INSPECTOR</option>
+            </select>
+
+            <select name="designation" id="editDesignation" required>
+                <option value="">Select Designation</option>
+                <option>Municipal Mayor</option>
+                <option>Municipal Budget Officer</option>
+                <option>Municipal Treasurer</option>
+                <option>Municipal Accountant</option>
+                <option>BAC Secretariat</option>
+                <option>BAC Member</option>
+                <option>General Services Officer</option>
+                <option>Inspector</option>
+            </select>
+
+            <div class="modal-buttons">
+                <button type="submit" class="btn-primary">Update</button>
+                <button type="button" class="btn-secondary" onclick="closeEditModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+
+
+
+<footer>
+    © 2026 Document Tracking System | Admin Panel
+</footer>
+
+<script>
+function goBackToDashboard(event){
+    event.preventDefault();
+    document.body.classList.add('loading');
+    document.getElementById('loaderMessage').textContent = 'Returning to Dashboard...';
+    setTimeout(() => {
+        window.location.href = "{{ url_for('dashboard') }}";
+    }, 1000);
+}
+
+
+function openAddModal() {
+    document.getElementById("addSignatoryModal").style.display = "flex"; // Show modal
+}
+
+function closeAddModal() {
+    document.getElementById("addSignatoryModal").style.display = "none"; // Hide modal
+}
+
+// Optional: close if clicking outside the card
+window.onclick = function(event) {
+    const modal = document.getElementById("addSignatoryModal");
+    if (event.target === modal) {
+        closeAddModal();
+    }
+}
+
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const row = btn.closest('tr');
+
+        // Get data from table cells
+        const id = btn.dataset.id;
+        const name = row.children[1].textContent.trim();
+        const office = row.children[2].textContent.trim();
+        const designation = row.children[3].textContent.trim();
+
+        // Fill modal fields
+        document.getElementById('editId').value = id;
+        document.getElementById('editName').value = name;
+        document.getElementById('editOffice').value = office;
+        document.getElementById('editDesignation').value = designation;
+
+        // Set form action dynamically (Flask)
+        document.getElementById('editSignatoryForm').action =
+            `/edit_signatory/${id}`;
+
+        // Show modal
+        document.getElementById('editSignatoryModal').style.display = 'flex';
+    });
+});
+
+function closeEditModal() {
+    document.getElementById('editSignatoryModal').style.display = 'none';
+}
+
+// Close when clicking outside modal
+window.addEventListener('click', e => {
+    const modal = document.getElementById('editSignatoryModal');
+    if (e.target === modal) {
+        closeEditModal();
+    }
+});
+
+// ALERT MESSAGE
+   function showToast(message) {
+    const toast = document.getElementById('toastMessage');
+    const overlay = document.getElementById('toastOverlay');
+
+    toast.textContent = message;
+    toast.style.opacity = '1';
+    overlay.style.opacity = '1';
+    overlay.style.pointerEvents = 'all';
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        overlay.style.opacity = '0';
+        overlay.style.pointerEvents = 'none';
+    }, 1200);
+}
+
+// DELETE
+function confirmDelete() {
+    return confirm("Are you sure you want to delete this signatory?");
+}
+
+
+// SEARCH FUNCTION
+const searchInput = document.getElementById('searchInput');
+const searchBtn = document.getElementById('searchBtn');
+const clearBtn = document.getElementById('clearBtn');
+const tableBody = document.getElementById('signatoriesTable');
+
+function filterTable() {
+    const filter = searchInput.value.toLowerCase().trim();
+    const rows = tableBody.querySelectorAll('tr');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        // Skip empty-table message
+        if (row.children.length === 1) return;
+
+        const rowText = row.textContent.toLowerCase();
+
+        if (filter === '' || rowText.includes(filter)) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    // Handle "no matching results"
+    let emptyRow = tableBody.querySelector('.no-results');
+
+    if (visibleCount === 0 && filter !== '') {
+        if (!emptyRow) {
+            const tr = document.createElement('tr');
+            tr.className = 'no-results';
+            tr.innerHTML = `
+                <td colspan="6" style="text-align:center; padding:20px; color:#6b7280;">
+                    No matching signatories found
+                </td>
+            `;
+            tableBody.appendChild(tr);
+        }
+    } else if (emptyRow) {
+        emptyRow.remove();
+    }
+}
+
+// 🔍 Search ONLY when button is clicked
+searchBtn.addEventListener('click', filterTable);
+
+// ❌ Clear search
+clearBtn.addEventListener('click', () => {
+    searchInput.value = '';
+
+    const rows = tableBody.querySelectorAll('tr');
+    rows.forEach(row => row.style.display = '');
+
+    const emptyRow = tableBody.querySelector('.no-results');
+    if (emptyRow) emptyRow.remove();
+});
+
+</script>
+
+<!-- Flask flash → toast -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <script>
+      {% for category, message in messages %}
+        showToast("{{ message }}");
+      {% endfor %}
+    </script>
+  {% endif %}
+{% endwith %}
+
+</body>
+</html>

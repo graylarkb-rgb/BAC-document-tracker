@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <style>
+    body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f4f6f8;
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* ✅ ADDED: ensure full-height flex works consistently */
+html, body {
+    height: 100%;
+}
+
+        /* ===== HEADER ===== */
+        header {
+            background-color: #1f2937;
+            color: #fff;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            background: #e5e7eb;
+            text-align: center;
+            padding: 15px;
+            font-size: 13px;
+        }
+
+/* Optional: styling for the back button */
+   .nav button {
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+}
+
+   .nav button:hover {
+    background-color: none;
+    }
+
+
+        /* ===== MAIN WRAPPER ===== */
+main {
+    padding: 20px 30px;
+    flex: 1;              /* ✅ ADDED: pushes footer to bottom */
+}
+
+/* ===== TOOLBAR ===== */
+.toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: nowrap;            /* ✅ prevent going to next line */
+    margin-bottom: 15px;
+}
+
+/* LEFT */
+.toolbar-left {
+    display: flex;
+    gap: 10px;
+    flex: 0 0 auto;
+}
+
+.toolbar-left button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.2s ease;
+}
+
+.toolbar-left button:hover {
+    background: #1e40af;
+}
+
+.toolbar-left button i {
+    pointer-events: none;
+}
+
+/* RIGHT */
+.toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 0 auto;
+    margin-left: auto;           /* ✅ push right side to the end */
+}
+
+.toolbar-right input {
+    height: 40px;
+    padding: 0 12px;
+    width: 320px;                /* ✅ adjust as you like */
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+}
+
+.toolbar-right button {
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    background: #2563eb;
+    color: #fff;
+}
+
+/* ✅ Make the text button not wrap */
+.toolbar-left .icon-btn:first-child {
+    width: auto;           /* override the 40px */
+    padding: 0 14px;       /* give space for text */
+    white-space: nowrap;   /* keep in one line */
+    font-size: 14px;
+}
+
+/* ✅ Keep the icon-only (pen) button square */
+.toolbar-left .icon-btn:not(:first-child) {
+    width: 40px;
+    padding: 0;
+}
+
+
+
+
+/* ===== TABLE ===== */
+.table-container {
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    padding: 10px 12px;
+}
+
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    background: #1f2937;
+    color: #fff;
+}
+
+thead th {
+    padding: 14px 16px;
+    text-align: left;
+    font-weight: bold;
+}
+
+/* 🔽 Smaller tbody font */
+tbody td {
+    padding: 12px 16px;   /* slightly reduced padding */
+    font-size: 12px;     /* smaller text */
+    border-bottom: 1px solid #e5e7eb;
+}
+
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+
+/* ===== PAGINATION ===== */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+    gap: 10px;
+}
+
+.pagination button {
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* ===== BLUR ===== */
+.blur-backdrop {
+    position: fixed;
+    inset: 0;
+    backdrop-filter: blur(6px);
+    background: rgba(255,255,255,0.15);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 998;
+}
+
+body.loading .blur-backdrop {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* ===== LOADER ===== */
+.loader {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background: rgba(255,255,255,0.6);
+    z-index: 999;
+}
+
+body.loading .loader {
+    display: flex;
+}
+
+.loader-text {
+    display: flex;
+    gap: 6px;
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: #1f2937;
+}
+
+.loader-text span {
+    animation: jump 1.2s infinite ease-in-out;
+}
+
+/* 🔑 STAGGERED LETTER ANIMATION (THIS WAS MISSING) */
+.loader-text span:nth-child(1){ animation-delay: 0s; }
+.loader-text span:nth-child(2){ animation-delay: .1s; }
+.loader-text span:nth-child(3){ animation-delay: .2s; }
+.loader-text span:nth-child(4){ animation-delay: .3s; }
+.loader-text span:nth-child(5){ animation-delay: .4s; }
+.loader-text span:nth-child(6){ animation-delay: .5s; }
+
+@keyframes jump {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+}
+
+.loader-subtext {
+    margin-top: 12px;
+    font-size: 14px;
+    color: #374151;
+}
+
+
+/* ===== CLEAN MODAL (with fade-in) ===== */
+.modal{
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(0,0,0,0.35);
+  z-index: 2000;
+
+  /* hidden state */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  transition: opacity .18s ease, visibility .18s ease;
+}
+
+/* show state */
+.modal.show{
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* modal panel */
+.modal-content{
+  width: 520px;
+  max-width: calc(100% - 32px);
+
+  background: #fff;
+  border-radius: 14px;
+  padding: 26px 28px;
+
+  box-shadow: 0 18px 60px rgba(0,0,0,.30);
+
+  /* subtle pop */
+  transform: translateY(8px) scale(.98);
+  transition: transform .18s ease;
+}
+
+.modal.show .modal-content{
+  transform: translateY(0) scale(1);
+}
+
+/* title */
+.modal-content h2{
+  margin: 0 0 18px 0;
+  text-align: center;
+  font-size: 26px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+/* labels */
+.modal-content label{
+  display:block;
+  margin: 12px 0 6px;
+  font-weight: 700;
+  color: #111827;
+  font-size: 14px;
+}
+
+/* inputs/selects */
+.modal-content input,
+.modal-content select{
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+
+  font-size: 14px;
+  outline: none;
+}
+
+.modal-content input:focus,
+.modal-content select:focus{
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,.15);
+}
+
+/* ✅ Normalize input & select widths */
+.modal-content input,
+.modal-content select {
+    width: 100%;
+    height: 44px;
+
+    padding: 0 14px;
+    box-sizing: border-box;   /* 🔑 THIS fixes the mismatch */
+
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #fff;
+
+    font-size: 14px;
+    outline: none;
+}
+
+/* primary button */
+.modal-content .btn-primary{
+  width: 100%;
+  height: 46px;
+  margin-top: 18px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: #0b3a67; /* clean navy-ish like your sample */
+  color: #fff;
+  font-weight: 800;
+  font-size: 15px;
+
+  cursor: pointer;
+}
+
+.modal-content .btn-primary:hover{
+  filter: brightness(.95);
+}
+
+/* cancel link button */
+.modal-content .link-cancel{
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+
+  background: transparent;
+  border: none;
+  cursor: pointer;
+
+  color: #0b3a67;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+
+
+/* ===== ALERTS ===== */
+.alert {
+    padding: 12px 18px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.alert-success {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #86efac;
+}
+
+.alert-error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+}
+
+/* ===== CENTER OVERLAY ALERT ===== */
+.alert-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1001;
+}
+
+.alert-box {
+    min-width: 320px;
+    max-width: 420px;
+    padding: 20px 24px;
+    border-radius: 12px;
+    font-size: 15px;
+    text-align: center;
+    animation: popIn 0.25s ease-out;
+}
+
+.alert-box.success {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #86efac;
+}
+
+.alert-box.error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+}
+
+@keyframes popIn {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+
+
+    </style>
+</head>
+<body>
+
+<div class="blur-backdrop"></div>
+<div class="loader">
+    <div class="loader-text">
+        <span>A</span><span>L</span><span>A</span><span>B</span><span>A</span><span>T</span>
+    </div>
+    <div class="loader-subtext" id="loaderMessage">Loading...</div>
+</div>
+
+<header>
+    <h1>👥 Documents</h1>
+    <div class="nav">
+        <button onclick="handleBack(event)">← Back</button>
+    </div>
+</header>
+
+<!-- Main content goes here -->
+<main>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+    <div class="toolbar-left">
+
+        <!-- Issue Control No -->
+        <button type="button" class="icon-btn" onclick="openAssignModal()">
+            Issue Control No.
+        </button>
+
+        <!-- Edit Documents -->
+        <button class="icon-btn"
+                title="Edit Documents"
+                onclick="showLoaderAndRedirect('{{ url_for('edit_documents') }}', 'Opening Edit Document...')">
+            ✏️
+        </button>
+
+        <!-- ✅ Tracking Button -->
+        <button class="icon-btn"
+        title="Tracking"
+        onclick="showLoaderAndRedirect('{{ url_for('tracking_page') }}', 'Opening Tracking...')">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"></circle>
+        <circle cx="12" cy="12" r="2"></circle>
+        <line x1="12" y1="1" x2="12" y2="5"></line>
+        <line x1="12" y1="19" x2="12" y2="23"></line>
+        <line x1="1" y1="12" x2="5" y2="12"></line>
+        <line x1="19" y1="12" x2="23" y2="12"></line>
+    </svg>
+</button>
+
+
+    </div>
+
+    <!-- Search -->
+    <form class="toolbar-right" id="searchForm">
+        <input type="text" id="searchControlNo" placeholder="Search by Control Number">
+        <button type="submit" class="search-btn">Search</button>
+        <button type="button" class="clear-btn" onclick="clearSearch()">Clear</button>
+    </form>
+</div>
+
+<!-- TABLE -->
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Issued Control No.</th>
+                <th>Project Title</th>
+                <th>Amount</th>
+                <th>Code</th>
+                <th>Issued To</th>
+                <th>Issued By</th>
+                <th>Date Issued</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+
+      <tbody id="tableBody">
+  {% if issued %}
+    {% for row in issued %}
+    <tr class="data-row">
+      <td>{{ row.control_no }}</td>
+      <td>{{ row.program }}</td>
+      <td>{{ row.amount }}</td>
+      <td>{{ row.code }}</td>
+      <td>{{ row.office }}</td>
+      <td>{{ row.issued_by }}</td>
+      <td>{{ row.issued_date }}</td>
+      <td>{{ row.status or 'Issued' }}</td>
+    </tr>
+    {% endfor %}
+  {% endif %}
+
+  <!-- ✅ No match row (hidden by default) -->
+  <tr id="noMatchRow" style="display:none;">
+    <td colspan="7" style="text-align:center; padding:16px; font-weight:600; color:#6b7280;">
+      No Matching Data Found
+    </td>
+  </tr>
+</tbody>
+
+    </table>
+
+    <!-- PAGINATION -->
+    <div class="pagination">
+        <button type="button" onclick="changePage(currentPage - 1)">Prev</button>
+        <span id="pageInfo">Page 1 of 1</span>
+        <button type="button" onclick="changePage(currentPage + 1)">Next</button>
+    </div>
+</div>
+
+</main>
+
+
+
+<!-- ✅ Add this class to your modal container (keep the same id) -->
+<div class="modal" id="assignModal">
+  <div class="modal-content">
+      <h2>Issue Control Number</h2>
+
+      <form method="POST" action="{{ url_for('assign_control_no') }}">
+          <label for="assign_control_no">Control Number</label>
+          <input type="text" name="control_no" id="assign_control_no" placeholder="Enter Control Number" required>
+
+<label for="assign_amount">Amount</label>
+<input type="text"
+       name="amount"
+       id="assign_amount"
+       placeholder="Enter Amount"
+       oninput="formatWithCommas(this)"
+       required>
+
+
+
+          <label for="assign_office">Office/Department</label>
+          <select name="office" id="assign_office" required>
+              <option value="">Select Office</option>
+              <option>MMO</option>
+              <option>MBO</option>
+              <option>OMAcc</option>
+              <option>PESO</option>
+              <option>HRMO</option>
+              <option>GSO</option>
+              <option>MSWDO</option>
+              <option>OMAss</option>
+              <option>MTO</option>
+              <option>MCR</option>
+              <option>TOURISM</option>
+              <option>MPDO</option>
+              <option>SB</option>
+              <option>SSB</option>
+              <option>MHO</option>
+              <option>MDRRMO</option>
+              <option>OME</option>
+              <option>PORT</option>
+              <option>MAO</option>
+          </select>
+
+          <label for="assign_program">Program/Project Title</label>
+          <input type="text" name="program" id="assign_program" placeholder="Enter Program or Project Title" required>
+
+          <label for="assign_code">Code</label>
+          <select name="code" id="assign_code" required>
+              <option value="">Select Code</option>
+              <option value="PRN">PRN</option>
+              <option value="SVP">SVP</option>
+          </select>
+
+          <label for="assign_fund">Source of Fund</label>
+          <select name="source_of_fund" id="assign_fund" required>
+              <option value="">Select Source of Fund</option>
+              <option value="General Fund">General Fund</option>
+              <option value="Special Education Fund">Special Education Fund</option>
+              <option value="Trust Fund">Trust Fund</option>
+              <option value="Trust Liabilities">Trust Liabilities</option>
+          </select>
+
+          <button type="submit" class="btn-primary">Issue </button>
+          <button type="button" class="link-cancel" onclick="closeAssignModal()">← Cancel</button>
+      </form>
+  </div>
+</div>
+
+<footer>© 2026 Document Tracking System | Admin Panel</footer>
+
+<script>
+
+/* ===== TABLE PAGINATION ===== */
+const tableBody = document.getElementById("tableBody");
+const allRows = Array.from(tableBody.querySelectorAll("tr.data-row")); // ✅ only data rows
+const pageInfo = document.getElementById("pageInfo");
+const noMatchRow = document.getElementById("noMatchRow");
+
+let currentPage = 1;
+const rowsPerPage = 10;
+
+/* render visible rows based on dataset.match */
+function renderPage(page) {
+    const visible = allRows.filter(r => r.dataset.match === "1");
+    const pages = Math.ceil(visible.length / rowsPerPage);
+    currentPage = Math.max(1, Math.min(page, pages || 1));
+
+    // clear table body and re-append only rows for this page
+    tableBody.innerHTML = "";
+
+    if (visible.length === 0) {
+        // ✅ show "no match"
+        noMatchRow.style.display = "";
+        tableBody.appendChild(noMatchRow);
+        pageInfo.textContent = `Page 1 of 1`;
+        return;
+    } else {
+        // ✅ hide "no match"
+        noMatchRow.style.display = "none";
+    }
+
+    visible
+        .slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage)
+        .forEach(r => tableBody.appendChild(r));
+
+    pageInfo.textContent = `Page ${currentPage} of ${pages || 1}`;
+}
+
+function changePage(p) {
+    renderPage(p);
+}
+
+/* ===== SEARCH (CONTROL NUMBER ONLY, FILTER ON BUTTON CLICK) ===== */
+document.getElementById("searchForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const keyword = document.getElementById("searchControlNo").value.toLowerCase().trim();
+
+    allRows.forEach(row => {
+        const controlNo = (row.cells[0]?.textContent || "").toLowerCase().trim();
+        row.dataset.match = (keyword === "" || controlNo.includes(keyword)) ? "1" : "0";
+    });
+
+    renderPage(1);
+});
+
+/* CLEAR SEARCH */
+function clearSearch() {
+    document.getElementById("searchControlNo").value = "";
+    allRows.forEach(row => row.dataset.match = "1");
+    renderPage(1);
+}
+
+/* ===== INIT ===== */
+allRows.forEach(row => row.dataset.match = "1");
+renderPage(1);
+
+
+
+   function handleBack(e){
+    e.preventDefault();
+    document.getElementById("loaderMessage").textContent = "Returning to Dashboard...";
+    document.body.classList.add("loading");
+
+    setTimeout(() => {
+        window.location.href = "/dashboard";
+    }, 1500);
+}
+
+
+/* ✅ Open/close functions (fade in/out) */
+function openAssignModal(){
+  document.getElementById("assignModal").classList.add("show");
+}
+function closeAssignModal(){
+  document.getElementById("assignModal").classList.remove("show");
+}
+
+/* close on backdrop click */
+document.addEventListener("click", function(e){
+  const modal = document.getElementById("assignModal");
+  if(modal && modal.classList.contains("show") && e.target === modal){
+    closeAssignModal();
+  }
+});
+
+/* close on ESC */
+document.addEventListener("keydown", function(e){
+  if(e.key === "Escape") closeAssignModal();
+});
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    const overlay = document.getElementById("alertOverlay");
+    if (overlay) {
+        setTimeout(() => {
+            overlay.style.opacity = "0";
+            overlay.style.pointerEvents = "none";
+            setTimeout(() => overlay.remove(), 300);
+        }, 2000); // ⏱ 2 seconds (adjust if you want)
+    }
+});
+
+
+ function showLoaderAndRedirect(url, message = "Loading...") {
+        // show loader + blur
+        document.body.classList.add("loading");
+
+        const msg = document.getElementById("loaderMessage");
+        if (msg) msg.textContent = message;
+
+        // delay then redirect
+        setTimeout(() => {
+            window.location.href = url;
+        }, 1000);
+    }
+
+
+
+
+function formatWithCommas(input) {
+    // Remove all non-digit characters
+    let value = input.value.replace(/,/g, '').replace(/\D/g, '');
+
+    if (value === '') {
+        input.value = '';
+        return;
+    }
+
+    // Add commas
+    input.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+</script>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="alert-overlay" id="alertOverlay">
+      {% for category, message in messages %}
+        <div class="alert-box {{ category }}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tracking</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
+      font-size: 14px;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    html, body { height: 100%; }
+
+    /* ===== HEADER ===== */
+    header {
+      background-color: #1f2937;
+      color: #fff;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 { margin: 0; font-size: 20px; }
+
+    /* back button */
+    .nav button {
+      background: none;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .nav button:hover { opacity: 0.85; }
+
+    /* ===== MAIN ===== */
+    main {
+      padding: 20px 30px;
+      flex: 1;
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      background: #e5e7eb;
+      text-align: center;
+      padding: 15px;
+      font-size: 13px;
+    }
+
+    /* =========================================================
+       TRACKING UI
+    ========================================================= */
+
+    .tracking-wrap{
+      display: flex;
+      justify-content: center;
+      padding-top: 10px;
+    }
+
+    /* ONE container so filters align with the card */
+    .tracking-container{
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .tracking-card {
+      width: 100%;
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px 28px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+      position: relative; /* for watermark positioning */
+      min-height: 320px;  /* enough height for watermark */
+      overflow: hidden;
+    }
+
+    .tracking-title{
+      margin: 0 0 6px;
+      font-size: 20px;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .tracking-sub{
+      margin: 0 0 18px;
+      color: #6b7280;
+      font-size: 13px;
+    }
+
+    .tracking-timeline{
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .track-item{
+      position: relative;
+      display: flex;
+      gap: 14px;
+      padding: 12px 0;
+    }
+
+    .track-item::before{
+      content: "";
+      position: absolute;
+      left: 11px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #d1d5db;
+    }
+
+    .track-dot{
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #e5e7eb;
+      border: 2px solid #d1d5db;
+      margin-top: 2px;
+      flex: 0 0 22px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .track-content{
+      flex: 1;
+      padding-left: 6px;
+    }
+
+    .track-row{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .track-status{
+      font-weight: 700;
+      color: #111827;
+      font-size: 14px;
+    }
+
+    .track-date{
+      color: #6b7280;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .track-note{
+      margin-top: 4px;
+      color: #6b7280;
+      font-size: 12px;
+      line-height: 1.3;
+    }
+
+    .track-item.done::before{ background: #0ea5e9; }
+    .track-item.done .track-dot{
+      background: #0ea5e9;
+      border-color: #0ea5e9;
+    }
+
+    /* ===== TRACKING FILTER BAR ===== */
+    .tracking-filters {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      align-items: center;
+    }
+
+    .tracking-filters select {
+      min-width: 240px;
+      padding: 10px 12px;
+      font-size: 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    /* =========================================================
+       WATERMARK EMPTY STATE
+    ========================================================= */
+
+    /* default: show watermark + hide content */
+    .tracking-card.empty .tracking-content { display: none; }
+    .tracking-card.empty .tracking-watermark { display: flex; }
+
+    /* when not empty: show content + hide watermark */
+    .tracking-card:not(.empty) .tracking-content { display: block; }
+    .tracking-card:not(.empty) .tracking-watermark { display: none; }
+
+  /* Watermark container (centered) */
+/* Watermark container (centered) */
+.tracking-watermark{
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  pointer-events: none;
+  opacity: 0.18;
+}
+
+/* ✅ PERFECTLY SCALED watermark image */
+.tracking-watermark img{
+  height: 160px;        /* 👈 adjust this (140–200px sweet spot) */
+  width: auto;          /* keeps aspect ratio */
+  max-height: 200px;    /* safety cap */
+  min-height: 140px;    /* never tiny */
+  filter: grayscale(100%);
+  opacity: 1;
+}
+
+
+
+
+/* watermark text */
+.tracking-watermark .wm-text{
+  font-size: 15px;
+  color: #6b7280;
+  letter-spacing: 0.3px;
+}
+
+
+
+.tracking-card{
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px 28px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+
+  /* 🔑 default height (EMPTY state) */
+  min-height: 420px;
+}
+
+
+    /* =========================================================
+       OPTIONAL: LOADER + BLUR (kept from your code)
+    ========================================================= */
+
+    .blur-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      z-index: 998;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .blur-backdrop.show,
+    body.loading .blur-backdrop {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .loader {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      background: rgba(255,255,255,0.6);
+      z-index: 999;
+    }
+
+    body.loading .loader { display: flex; }
+
+    .loader-text {
+      display: flex;
+      gap: 6px;
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      color: #1f2937;
+    }
+
+    .loader-text span { animation: jump 1.2s infinite ease-in-out; }
+    .loader-text span:nth-child(1){ animation-delay: 0s; }
+    .loader-text span:nth-child(2){ animation-delay: .1s; }
+    .loader-text span:nth-child(3){ animation-delay: .2s; }
+    .loader-text span:nth-child(4){ animation-delay: .3s; }
+    .loader-text span:nth-child(5){ animation-delay: .4s; }
+    .loader-text span:nth-child(6){ animation-delay: .5s; }
+
+    @keyframes jump {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+
+    .loader-subtext {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #374151;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="blur-backdrop"></div>
+<div class="loader">
+    <div class="loader-text">
+        <span>A</span><span>L</span><span>A</span><span>B</span><span>A</span><span>T</span>
+    </div>
+    <div class="loader-subtext" id="loaderMessage">Loading...</div>
+</div>
+
+<header>
+  <h1>🎯 Tracking</h1>
+  <div class="nav">
+    <button onclick="handleBack(event)">← Back</button>
+  </div>
+</header>
+
+<main>
+  <!-- ONE container so filters align with the card -->
+  <div class="tracking-container">
+
+    <!-- ===== TRACKING FILTERS ===== -->
+    <div class="tracking-filters">
+      <select id="filterControlNo">
+        <option value="">Select Control No.</option>
+        <option>2026-001</option>
+        <option>2026-002</option>
+        <option>2026-003</option>
+      </select>
+
+      <select id="filterStatus">
+        <option value="">Select Status</option>
+        <option>Issued</option>
+        <option>Edited</option>
+        <option>Received</option>
+        <option>Completed</option>
+      </select>
+    </div>
+
+    <!-- ===== TRACKER CARD ===== -->
+    <div class="tracking-wrap">
+      <!-- start as empty so watermark shows -->
+      <div class="tracking-card empty" id="trackingCard">
+
+        <!-- ✅ Watermark shown when no dropdown selected -->
+        <div class="tracking-watermark" id="trackingWatermark" aria-hidden="true">
+           <img src="/static/img/tracking-icon.png" style="height:22px; vertical-align:middle;">
+  Tracking
+        </div>
+
+        <!-- ✅ Actual tracker content (hidden until selected) -->
+        <div class="tracking-content" id="trackingContent">
+          <h2 class="tracking-title">Document Tracking</h2>
+          <p class="tracking-sub">Control No.: <b>2026-0012</b></p>
+
+          <ul class="tracking-timeline">
+            <li class="track-item done">
+              <span class="track-dot"></span>
+              <div class="track-content">
+                <div class="track-row">
+                  <span class="track-status">Issued</span>
+                  <span class="track-date">2026-01-19 11:47:21</span>
+                </div>
+                <div class="track-note">Issued by: admin • Office: OME</div>
+              </div>
+            </li>
+
+            <li class="track-item done">
+              <span class="track-dot"></span>
+              <div class="track-content">
+                <div class="track-row">
+                  <span class="track-status">Edited</span>
+                  <span class="track-date">2026-01-19 14:07:58</span>
+                </div>
+                <div class="track-note">Edited by: admin • Reason: corrected control number</div>
+              </div>
+            </li>
+
+            <li class="track-item">
+              <span class="track-dot"></span>
+              <div class="track-content">
+                <div class="track-row">
+                  <span class="track-status">Received</span>
+                  <span class="track-date">—</span>
+                </div>
+                <div class="track-note">Waiting for receiving details</div>
+              </div>
+            </li>
+
+            <li class="track-item">
+              <span class="track-dot"></span>
+              <div class="track-content">
+                <div class="track-row">
+                  <span class="track-status">Completed</span>
+                  <span class="track-date">—</span>
+                </div>
+                <div class="track-note">Not yet completed</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer>© 2026 Document Tracking System | Admin Panel</footer>
+
+<script>
+function handleBack(e) {
+        e.preventDefault();
+
+        // Update loader message
+        const msg = document.getElementById("loaderMessage");
+        if (msg) msg.textContent = "Returning to Documents...";
+
+        // Show loader + blur
+        document.body.classList.add("loading");
+
+        // Redirect after delay
+        setTimeout(() => {
+            window.location.href = "{{ url_for('documents') }}";
+        }, 1500);
+    }
+
+  // ✅ Empty state logic for watermark vs content
+  const filterControlNo = document.getElementById("filterControlNo");
+  const filterStatus = document.getElementById("filterStatus");
+  const trackingCard = document.getElementById("trackingCard");
+
+  function updateTrackingEmptyState() {
+    const controlVal = (filterControlNo.value || "").trim();
+    const statusVal  = (filterStatus.value || "").trim();
+    const isEmpty = controlVal === "" || statusVal === "";
+    trackingCard.classList.toggle("empty", isEmpty);
+  }
+
+  // run on load + change
+  updateTrackingEmptyState();
+  filterControlNo.addEventListener("change", updateTrackingEmptyState);
+  filterStatus.addEventListener("change", updateTrackingEmptyState);
+</script>
+
+</body>
+</html>
