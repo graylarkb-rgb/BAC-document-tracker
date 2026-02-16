@@ -53,6 +53,19 @@
             z-index: 2;
         }
 
+        /* ===== LOGO STYLE ===== */
+        .logo-wrap {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .logo-wrap img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+        }
+
         .login-container h2 {
             margin-bottom: 20px;
             text-align: center;
@@ -177,10 +190,15 @@
 </head>
 <body>
 
-<!-- BLUR BACKGROUND -->
 <div class="blur-backdrop"></div>
 
 <div class="login-container">
+
+    <!-- ✅ ALABAT LOGO -->
+    <div class="logo-wrap">
+        <img src="{{ url_for('static', filename='img/Alabat_Official_logo.png') }}" alt="Alabat Logo">
+    </div>
+
     <h2>Document Tracking System</h2>
     <p class="subtitle">Please sign in to continue</p>
 
@@ -206,15 +224,9 @@
         <button type="submit" class="login-btn">Login</button>
     </form>
 
-    <!-- LOADER -->
     <div class="loader-overlay">
         <div class="loader-text">
-            <span>A</span>
-            <span>L</span>
-            <span>A</span>
-            <span>B</span>
-            <span>A</span>
-            <span>T</span>
+            <span>A</span><span>L</span><span>A</span><span>B</span><span>A</span><span>T</span>
         </div>
         <div class="loading-subtext">Authenticating...</div>
     </div>
@@ -228,11 +240,11 @@
     const form = document.getElementById("loginForm");
 
     form.addEventListener("submit", function (e) {
-        e.preventDefault(); // stop instant submit
+        e.preventDefault();
         document.body.classList.add("loading");
 
         setTimeout(() => {
-            form.submit(); // submit after 1.5 seconds
+            form.submit();
         }, 1500);
     });
 </script>
